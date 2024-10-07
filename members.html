@@ -7,7 +7,7 @@
   <title>GotoGro</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@48,400,0,0" />
   <link rel="stylesheet" href="style.css">
-  <script src="script.js"></script>
+  <script src="members.js"></script>
 </head>
 <body>
     <div class="container">
@@ -80,17 +80,19 @@
             <div class="member-container">
                 <!--Add Members Form-->
             <h1>Registration Form</h1>
-            <form action="#" class="member-form">
+            <form id="add" method="post" action="Process_Add.php" class="member-form" novalidate="novalidate">
                 <!--Full Name-->
                 <div class="input-box">
                     <label>Full Name</label>
-                    <input type="text" placeholder="Enter full name" required />
+                    <input type="text" name="fullname" id="fullname" maxlength="40" pattern="^[a-zA-Z ]+$" placeholder="Example: John Doe" required />
+                    <section id="fullname_error" class="error"></section>
                 </div>
 
                 <!--Email Address-->
                 <div class="input-box">
                     <label>Email Address</label>
-                    <input type="text" placeholder="Enter email address" required />
+                    <input type="text" name="email" id="email" pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$" placeholder="Example: name@domain.com" required />
+                    <section id="email_error" class="error"></section>
                 </div>
                 
                 <!--Merge Column-->
@@ -98,13 +100,15 @@
                     <!--Phone Number-->
                     <div class="input-box">
                         <label>Phone Number</label>
-                        <input type="number" placeholder="Enter phone number" required />
+                        <input type="tel" name="phonenum" id="phonenum" maxlength="12" pattern="[0-9 ]{8,12}" placeholder="Example: 012 1234567" required />
+                        <section id="phonenum_error" class="error"></section>
                     </div>
 
                     <!--Birth Date-->
                     <div class="input-box">
                         <label>Birth Date</label>
-                        <input type="date" placeholder="Enter birth date" required />
+                        <input type="text" name="dob" id="dob" placeholder="dd/mm/yyyy" pattern="\d{1,2}\/\d{1,2}\/\d{4}" placeholder="dd/mm/yyyy" required />
+                        <section id="dob_error" class="error"></section>
                     </div>
                 </div>
 
@@ -114,21 +118,22 @@
                     <div class="gender-option">
                         <!--Male-->
                         <div class="gender">
-                            <input type="radio" id="check-male" name="gender" value="male" checked />
+                            <input type="radio" name="gender" id="check-male" value="male" checked />
                             <label for="check-male">Male</label>
                         </div>
 
                         <!--Female-->
                         <div class="gender">
-                            <input type="radio" id="check-female" name="gender" value="female"/>
+                            <input type="radio" name="gender" id="check-female" value="female"/>
                             <label for="check-female">Female</label>
                         </div>
 
                         <!--Not to Say-->
                         <div class="gender">
-                            <input type="radio" id="check-other" name="gender" value="not-say"/>
-                            <label for="check-other">Prefer Not To Say</label>
+                            <input type="radio" name="gender" id="check-others" value="not-say"/>
+                            <label for="check-others">Prefer Not To Say</label>
                         </div>
+                        <section id="gender_error" class="error"></section>
                     </div>
                 </div>
 
@@ -137,32 +142,48 @@
 
                     <!--Street Address-->
                     <label>Address</label>
-                    <input type="text" placeholder="Enter street address" required />
-                    <input type="text" placeholder="Enter street address line 2" required />
+                    <input type="text" name="streetaddress1" id="streetaddress1" maxlength="40" size="40" pattern="[a-zA-Z ]{1,40}" placeholder="Enter street address line 1" required />
+                    <section id="streetaddress1_error" class="error"></section>
+                    <input type="text" name="streetaddress2" id="streetaddress2" maxlength="40" size="40" pattern="[a-zA-Z ]{1,40}" placeholder="Enter street address line 2" />
+                    <section id="streetaddress2_error" class="error"></section>
                     
                     <!--Country-->
                     <div class="column">
                         <div class="select-box">
-                            <select>
-                                <option hidden>Country</option>
-                                <option>America</option>
-                                <option>Japan</option>
-                                <option>India</option>
-                                <option>Nepal</option>
+                            <select name="country" id="country" required>
+                                <option value="">Select your country</option>
+                                <option value="canada">Canada</option>
+                                <option value="usa">USA</option>
+                                <option value="japan">Japan</option>
+                                <option value="india">India</option>
+                                <option value="malaysia">Malaysia</option>
+                                <option value="singapore">Singapore</option>
+                                <option value="southkorea">South Korea</option>
+                                <option value="myanmar">Myanmar</option>
+                                <option value="vietnam">Vietnam</option>
+                                <option value="brunei">Brunei</option>
+                                <option value="china">China</option>
+                                <option value="sweden">Sweden</option>
+                                <option value="france">France</option>
+                                <option value="germany">Germany</option>
                             </select>
                         </div>
+                        <section id="country_error" class="error"></section>
                         <!--City-->
-                        <input type="text" placeholder="Enter your city" required />
+                        <input type="text" name="city" id="city" maxlength="40" size="40" pattern="[a-zA-Z ]{1,40}" placeholder="Example: Kuala Lumpur" required />
+                        <section id="city_error" class="error"></section>
                     </div>
 
                     <div class="column">
                         <!--Region-->
-                        <input type="text" placeholder="Enter your region" required />
+                        <input type="text" name="region" id="region" maxlength="40" size="40" pattern="[a-zA-Z ]{1,40}" placeholder="Example: Asia/Europe/North America" required />
+                        <section id="region_error" class="error"></section>
                         <!--Postcode-->
-                        <input type="number" placeholder="Enter postal code" required />
+                        <input type="text" name="postalcode" id="postalcode" maxlength="5" size="5" pattern="\d{5}" placeholder="Example: 43200" required />
+                        <section id="postalcode_error" class="error"></section>
                     </div>
                 </div>
-          <button>Submit</button>
+            <button>Submit</button>
         </form>
             </div>
             
