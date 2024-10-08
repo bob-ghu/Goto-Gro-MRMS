@@ -62,6 +62,7 @@
 
 .input-box label {
   color: #333;
+  font-size: 0.9rem;
 }
 
 .member-form :where(.input-box input, .select-box) {
@@ -151,6 +152,11 @@
   border: none;
   color: #707070;
   font-size: 1rem;
+}
+
+.error {
+  font-size: 0.8rem;
+  color: #ca1919;
 }
 
 .member-form button {

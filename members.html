@@ -84,14 +84,14 @@
                 <!--Full Name-->
                 <div class="input-box">
                     <label>Full Name</label>
-                    <input type="text" name="fullname" id="fullname" maxlength="40" pattern="^[a-zA-Z ]+$" placeholder="Example: John Doe" required />
+                    <input type="text" name="fullname" id="fullname" maxlength="40" pattern="^[a-zA-Z ]+$" placeholder="Example: John Doe" required/>
                     <section id="fullname_error" class="error"></section>
                 </div>
 
                 <!--Email Address-->
                 <div class="input-box">
                     <label>Email Address</label>
-                    <input type="text" name="email" id="email" pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$" placeholder="Example: name@domain.com" required />
+                    <input type="text" name="email" id="email" pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$" placeholder="Example: name@domain.com" required/>
                     <section id="email_error" class="error"></section>
                 </div>
                 
@@ -100,14 +100,14 @@
                     <!--Phone Number-->
                     <div class="input-box">
                         <label>Phone Number</label>
-                        <input type="tel" name="phonenum" id="phonenum" maxlength="12" pattern="[0-9 ]{8,12}" placeholder="Example: 012 1234567" required />
+                        <input type="tel" name="phonenum" id="phonenum" maxlength="12" pattern="[0-9 ]{8,12}" placeholder="Example: 012 1234567" required/>
                         <section id="phonenum_error" class="error"></section>
                     </div>
 
                     <!--Birth Date-->
                     <div class="input-box">
                         <label>Birth Date</label>
-                        <input type="text" name="dob" id="dob" placeholder="dd/mm/yyyy" pattern="\d{1,2}\/\d{1,2}\/\d{4}" placeholder="dd/mm/yyyy" required />
+                        <input type="text" name="dob" id="dob" placeholder="dd/mm/yyyy" pattern="\d{1,2}\/\d{1,2}\/\d{4}" placeholder="dd/mm/yyyy" required/>
                         <section id="dob_error" class="error"></section>
                     </div>
                 </div>
@@ -118,7 +118,7 @@
                     <div class="gender-option">
                         <!--Male-->
                         <div class="gender">
-                            <input type="radio" name="gender" id="check-male" value="male" checked />
+                            <input type="radio" name="gender" id="check-male" value="male" />
                             <label for="check-male">Male</label>
                         </div>
 
@@ -142,57 +142,54 @@
 
                     <!--Street Address-->
                     <label>Address</label>
-                    <input type="text" name="streetaddress1" id="streetaddress1" maxlength="40" size="40" pattern="[a-zA-Z ]{1,40}" placeholder="Enter street address line 1" required />
-                    <section id="streetaddress1_error" class="error"></section>
-                    <input type="text" name="streetaddress2" id="streetaddress2" maxlength="40" size="40" pattern="[a-zA-Z ]{1,40}" placeholder="Enter street address line 2" />
-                    <section id="streetaddress2_error" class="error"></section>
+                    <input type="text" name="streetaddress1" id="streetaddress1" maxlength="40" size="40" pattern="[a-zA-Z ]{1,40}" placeholder="Street address line 1" required/>
+                    <input type="text" name="streetaddress2" id="streetaddress2" maxlength="40" size="40" pattern="[a-zA-Z ]{1,40}" placeholder="Street address line 2"/>
+                    <section id="streetaddress_error" class="error"></section>
                     
+                    <br>
                     <!--Country-->
-                    <div class="column">
-                        <div class="select-box">
-                            <select name="country" id="country" required>
-                                <option value="">Select your country</option>
-                                <option value="canada">Canada</option>
-                                <option value="usa">USA</option>
-                                <option value="japan">Japan</option>
-                                <option value="india">India</option>
-                                <option value="malaysia">Malaysia</option>
-                                <option value="singapore">Singapore</option>
-                                <option value="southkorea">South Korea</option>
-                                <option value="myanmar">Myanmar</option>
-                                <option value="vietnam">Vietnam</option>
-                                <option value="brunei">Brunei</option>
-                                <option value="china">China</option>
-                                <option value="sweden">Sweden</option>
-                                <option value="france">France</option>
-                                <option value="germany">Germany</option>
-                            </select>
-                        </div>
-                        <section id="country_error" class="error"></section>
-                        <!--City-->
-                        <input type="text" name="city" id="city" maxlength="40" size="40" pattern="[a-zA-Z ]{1,40}" placeholder="Example: Kuala Lumpur" required />
-                        <section id="city_error" class="error"></section>
+                    <label>Country</label>
+                    <div class="select-box">
+                        <select name="country" id="country" required>
+                            <option value="">Select a Country</option>
+                            <option value="canada">Canada</option>
+                            <option value="usa">USA</option>
+                            <option value="japan">Japan</option>
+                            <option value="india">India</option>
+                            <option value="malaysia">Malaysia</option>
+                            <option value="singapore">Singapore</option>
+                            <option value="southkorea">South Korea</option>
+                            <option value="myanmar">Myanmar</option>
+                            <option value="vietnam">Vietnam</option>
+                            <option value="brunei">Brunei</option>
+                            <option value="china">China</option>
+                            <option value="sweden">Sweden</option>
+                            <option value="france">France</option>
+                            <option value="germany">Germany</option>
+                        </select>
                     </div>
-
+                    <section id="country_error" class="error"></section>
                     <div class="column">
-                        <!--Region-->
-                        <input type="text" name="region" id="region" maxlength="40" size="40" pattern="[a-zA-Z ]{1,40}" placeholder="Example: Asia/Europe/North America" required />
-                        <section id="region_error" class="error"></section>
+                        <!--City-->
+                        <div class="input-box">
+                            <label>City</label>
+                            <input type="text" name="city" id="city" maxlength="40" size="40" pattern="[a-zA-Z ]{1,40}" placeholder="Example: Kuala Lumpur" required />
+                            <section id="city_error" class="error"></section>
+                        </div>
                         <!--Postcode-->
-                        <input type="text" name="postalcode" id="postalcode" maxlength="5" size="5" pattern="\d{5}" placeholder="Example: 43200" required />
-                        <section id="postalcode_error" class="error"></section>
+                        <div class="input-box">
+                            <label>Postal Code</label>
+                            <input type="text" name="postalcode" id="postalcode" maxlength="5" size="5" pattern="\d{5}" placeholder="Example: 45600" required/>
+                            <section id="postalcode_error" class="error"></section>
+                        </div>
+                        
                     </div>
                 </div>
             <button>Submit</button>
         </form>
             </div>
-            
         </main>
     </div>
-
-    
-
-
 </body>
 </html>
     
