@@ -1,3 +1,5 @@
+//const validation = false;
+
 "use strict";
 
 function validate() { // Function to validate all data
@@ -14,7 +16,7 @@ function validate() { // Function to validate all data
         result = false;
     }
     else if (!fullname.match(/^[a-zA-Z ]+$/)) {
-        fullname_error.innerHTML = "Invalid format.\n";
+        fullname_error.innerHTML = "Invalid name. Please use letters only.\n";
         document.getElementById("fullname").style.borderColor = "red";
         result = false;
     }
@@ -79,37 +81,36 @@ function validate() { // Function to validate all data
     gender_error.innerHTML = "";
     if(!(male || female || others)) {
         gender_error.innerHTML = "Please select a gender.\n";
-        result = false;
-    }
-
-    // Street Address line 1
-    var streetaddress1 = document.getElementById("streetaddress1").value;
-    var streetaddress1_error = document.getElementById("streetaddress1_error");
-    streetaddress1_error.innerHTML = "";
-    if (streetaddress1 == "") {
-        streetaddress1_error.innerHTML = "Please enter your street address.\n";
-        document.getElementById("streetaddress1").style.borderColor = "red";
-        result = false;
-    }
-    else if (!streetaddress1.match(/[a-zA-Z ]{1,40}/)) {
-        streetaddress1_error.innerHTML = "Street address is invalid.\n";
-        document.getElementById("streetaddress1").style.borderColor = "red";
+        document.getElementById("check-male").style.borderColor = "red";
+        document.getElementById("check-female").style.borderColor = "red";
+        document.getElementById("check-others").style.borderColor = "red";
         result = false;
     }
     else {
-        document.getElementById("streetaddress1").style.borderColor = "green";
+        document.getElementById("check-male").style.borderColor = "green";
+        document.getElementById("check-female").style.borderColor = "green";
+        document.getElementById("check-others").style.borderColor = "green";
     }
 
-    // Street Address line 2
+    // Street Address
+    var streetaddress1 = document.getElementById("streetaddress1").value;
     var streetaddress2 = document.getElementById("streetaddress2").value;
-    var streetaddress2_error = document.getElementById("streetaddress2_error");
-    streetaddress2_error.innerHTML = "";
-    if (streetaddress2 !== "" && !streetaddress2.match(/[a-zA-Z ]{1,40}/)) {
-        streetaddress2_error.innerHTML = "Street address is invalid.\n";
+    var streetaddress_error = document.getElementById("streetaddress_error");
+    streetaddress_error.innerHTML = "";
+    if (streetaddress1 == "" && streetaddress2 == "") {
+        streetaddress_error.innerHTML = "Please enter your street address.\n";
+        document.getElementById("streetaddress1").style.borderColor = "red";
+        document.getElementById("streetaddress2").style.borderColor = "red";
+        result = false;
+    }
+    else if (!streetaddress1.match(/[a-zA-Z0-9 ]{1,40}/) && !streetaddress2.match(/[a-zA-Z0-9- ]{1,40}/)) {
+        streetaddress_error.innerHTML = "Street address is invalid.\n";
+        document.getElementById("streetaddress1").style.borderColor = "red";
         document.getElementById("streetaddress2").style.borderColor = "red";
         result = false;
     }
     else {
+        document.getElementById("streetaddress1").style.borderColor = "green";
         document.getElementById("streetaddress2").style.borderColor = "green";
     }
 
@@ -119,11 +120,15 @@ function validate() { // Function to validate all data
     country_error.innerHTML = "";
     if (country == "") {
         country_error.innerHTML = "You must select a country.\n";
-        document.getElementById("country").style.borderColor = "red";
+        Array.from(document.getElementsByClassName("select-box")).forEach(function(element) {
+            element.style.border = "1px solid red";
+        });
         result = false;
     }
     else {
-        document.getElementById("country").style.borderColor = "green";
+        Array.from(document.getElementsByClassName("select-box")).forEach(function(element) {
+            element.style.border = "1px solid green";
+        });
     }
 
     // City
@@ -144,24 +149,6 @@ function validate() { // Function to validate all data
         document.getElementById("city").style.borderColor = "green";
     }
 
-    // Region
-    var region = document.getElementById("region").value;
-    var region_error = document.getElementById("region_error");
-    region_error.innerHTML = "";
-    if (region == "") {
-        region_error.innerHTML = "Please enter your region.\n";
-        document.getElementById("region").style.borderColor = "red";
-        result = false;
-    }
-    else if (!region.match(/[a-zA-Z ]{1,40}/)) {
-        region_error.innerHTML = "Region is invalid.\n";
-        document.getElementById("region").style.borderColor = "red";
-        result = false;
-    }
-    else {
-        document.getElementById("region").style.borderColor = "green";
-    }
-
     // Postal Code
     var postalcode = document.getElementById("postalcode").value;
     var postalcode_error = document.getElementById("postalcode_error");
@@ -172,7 +159,7 @@ function validate() { // Function to validate all data
         result = false;
     }
     else if (!postalcode.match(/^\d{5}$/)) {
-        postalcode_error.innerHTML = "Postal code is invalid.\n";
+        postalcode_error.innerHTML = "Postal code is invalid. Please use 5 digits only.\n";
         document.getElementById("postalcode").style.borderColor = "red";
         result = false;
     }
@@ -186,6 +173,11 @@ function validate() { // Function to validate all data
 function init() {
     var applyForm = document.getElementById("add");
     applyForm.onsubmit = validate;
+
+    /*if (validation) {
+        var applyForm = document.getElementById("add");
+        applyForm.onsubmit = validate;
+    }*/
 }
 
 window.onload = init;
