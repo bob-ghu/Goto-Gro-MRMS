@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS members (
 	Postal_Code int(5) NOT NULL
 );
 
-INSERT INTO member ( Member_ID, Full_Name, Email_Address, Phone_Number, DOB, Gender, Street_Address, Country, City, Postal_Code)
+INSERT IGNORE INTO members ( Member_ID, Full_Name, Email_Address, Phone_Number, DOB, Gender, Street_Address, Country, City, Postal_Code)
 
 VALUES
 (1, 'James Smith', 'james.smith@example.com', '5551234567', '23/07/1985', 'male', '123 Maple St', 'USA', 'Los Angeles', '90001'),
