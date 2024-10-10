@@ -82,9 +82,9 @@
         }
 
         // Street Address
-        $Street_Address = ""; // Initialize with a default value
-        if (isset($_POST["streetaddress1"]) || isset($_POST["streetaddress2"])) {
-            $Street_Address = $_POST["streetaddress1"] . ' ' . $_POST["streetaddress2"];
+        $Street_Address = "";
+        if (isset($_POST["streetaddress"])) {
+            $Street_Address = $_POST["streetaddress"];
             $Street_Address = sanitise_input($Street_Address);
         }
 
@@ -97,7 +97,7 @@
 
         // Country
         if (isset($_POST["country"])) {
-            $Country = $_POST["city"];
+            $Country = $_POST["country"];
             $Country = sanitise_input($Country);
         }
 
@@ -165,3 +165,6 @@
     }
 ?>
 
+<a href="members.php">
+    <button>Return</button>
+</a>
