@@ -69,3 +69,68 @@ VALUES
 (48, 'Zaw Win', 'zaw.win@example.mm', '0995432109', '11/12/1997', 'male', '123 Bago Rd', 'Myanmar', 'Bago', '80000'),
 (49, 'Chloe Chen', 'chloe.chen@example.cn', '13843210987', '18/12/1995', 'female', '456 Xian Rd', 'China', 'Xi An', '71000'),
 (50, 'Rachel Stewart', 'rachel.stewart@example.ca', '6047654321', '19/11/1992', 'female', '789 West St', 'Canada', 'Calgary', '92217');
+
+CREATE TABLE IF NOT EXISTS inventory (
+    Item_ID int(5) NOT NULL AUTO_INCREMENT,
+    Name varchar(100) NOT NULL,
+    Quantity int(5) NOT NULL,
+    Retail_Price decimal(10, 2) NOT NULL,
+    Selling_Price decimal(10, 2) NOT NULL,
+    Supplier varchar(100) NOT NULL,
+    Category varchar(50) NOT NULL,
+    Brand varchar(50) NOT NULL,
+    Reorder_Level int(5) NOT NULL,
+    PRIMARY KEY (Item_ID)
+);
+
+INSERT IGNORE INTO inventory (Name, Quantity, Retail_Price, Selling_Price, Supplier, Category, Brand, Reorder_Level)
+
+VALUES
+-- Fruits and Vegetables
+('Bananas', 100, 0.25, 0.30, 'Fresh Farms', 'Fruits and Vegetables', 'FreshCo', 20),
+('Apples', 200, 0.50, 0.60, 'Green Growers', 'Fruits and Vegetables', 'GreenThumb', 30),
+('Carrots', 150, 0.20, 0.30, 'Veggie Delight', 'Fruits and Vegetables', 'Veggie Fresh', 25),
+('Tomatoes', 180, 0.70, 0.85, 'Farm Fresh', 'Fruits and Vegetables', 'Natures Harvest', 40),
+('Spinach', 75, 1.00, 1.20, 'Leafy Greens', 'Fruits and Vegetables', 'FreshCo', 15),
+
+-- Dairy
+('Milk', 50, 2.00, 2.50, 'Dairy Delight', 'Dairy', 'Pure Dairy', 10),
+('Cheddar Cheese', 80, 3.00, 3.50, 'Cheese Co', 'Dairy', 'CheesyGood', 20),
+('Yogurt', 120, 1.50, 2.00, 'Happy Cow', 'Dairy', 'Creamy Delight', 30),
+('Butter', 60, 2.50, 3.00, 'Butter Farm', 'Dairy', 'Golden Spread', 15),
+('Cream', 40, 3.20, 4.00, 'Creamery Co', 'Dairy', 'RichCream', 10),
+
+-- Meat and Poultry
+('Chicken Breast', 90, 5.00, 6.00, 'Farm Poultry', 'Meat and Poultry', 'Poultry Fresh', 20),
+('Ground Beef', 60, 4.00, 5.00, 'Meat Masters', 'Meat and Poultry', 'Beefy', 15),
+('Pork Chops', 45, 4.50, 5.50, 'Meat Lovers', 'Meat and Poultry', 'Pork Delights', 10),
+('Turkey Sausage', 70, 3.50, 4.50, 'Turkey Time', 'Meat and Poultry', 'Gobble Good', 25),
+('Bacon', 100, 3.00, 3.80, 'Porky Farms', 'Meat and Poultry', 'Crispy Delight', 30),
+
+-- Seafood
+('Salmon Fillet', 50, 7.00, 8.50, 'Ocean Fresh', 'Seafood', 'Sea Delights', 10),
+('Shrimp', 80, 10.00, 12.00, 'Seafood World', 'Seafood', 'Shrimpy Delight', 25),
+('Tuna', 60, 6.00, 7.50, 'Ocean Catch', 'Seafood', 'Fishy Fresh', 15),
+('Crab Meat', 30, 15.00, 18.00, 'Crabby Co', 'Seafood', 'Crab Delights', 5),
+('Lobster Tail', 20, 20.00, 25.00, 'Luxury Seafood', 'Seafood', 'Lobster Luxury', 3),
+
+-- Beverages
+('Orange Juice', 120, 2.50, 3.00, 'Juice Co', 'Beverages', 'Citrus Burst', 30),
+('Apple Juice', 150, 2.00, 2.50, 'Fresh Juices', 'Beverages', 'Apple Fresh', 35),
+('Cola', 200, 1.00, 1.50, 'Soda Inc.', 'Beverages', 'Fizzy Fun', 50),
+('Mineral Water', 250, 0.80, 1.20, 'Water World', 'Beverages', 'Aqua Pure', 40),
+('Coffee', 100, 5.00, 6.00, 'Brew Co', 'Beverages', 'Morning Brew', 20),
+
+-- Snacks
+('Potato Chips', 180, 1.20, 1.50, 'Snack Factory', 'Snacks', 'Crunchy Crisps', 40),
+('Chocolate Bar', 250, 1.00, 1.50, 'ChocoWorld', 'Snacks', 'Sweet Treat', 50),
+('Pretzels', 120, 1.50, 2.00, 'Salty Snacks', 'Snacks', 'Salty Twist', 35),
+('Popcorn', 140, 1.80, 2.50, 'Popcorn Co', 'Snacks', 'Buttery Pop', 30),
+('Granola Bar', 160, 0.80, 1.20, 'Healthy Snacks', 'Snacks', 'Energy Boost', 45),
+
+-- Frozen Foods
+('Frozen Pizza', 100, 4.00, 5.00, 'Frozen Foods Co', 'Frozen Foods', 'Pizza Perfection', 25),
+('Ice Cream', 80, 3.50, 4.50, 'Cool Treats', 'Frozen Foods', 'Creamy Chill', 20),
+('Frozen Vegetables', 120, 2.00, 2.50, 'Frozen Farms', 'Frozen Foods', 'Veggie Delight', 30),
+('Frozen Chicken Nuggets', 90, 3.00, 3.80, 'Frozen Foods Co', 'Frozen Foods', 'Chicken Crunch', 20),
+('Frozen Fries', 150, 2.50, 3.00, 'Crispy Frozen', 'Frozen Foods', 'Golden Fries', 40);
