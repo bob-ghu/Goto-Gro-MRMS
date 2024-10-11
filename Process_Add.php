@@ -91,7 +91,7 @@
         if ($Street_Address == "") {
             $errMsg .= "<p>You must enter your street address.</p>";
         }
-        else if (!preg_match("/^[a-zA-Z0-9 ]{1,40}$/", $Street_Address)) {
+        else if (!preg_match("/^[a-zA-Z0-9 ]{1,50}$/", $Street_Address)) {
             $errMsg .= "<p>Street address is invalid.</p>";
         }
 
@@ -114,7 +114,7 @@
         if ($City == "") {
             $errMsg .= "<p>You must enter your city.</p>";
         }
-        else if (!preg_match("/^[a-zA-Z ]{1,40}$/", $City)) {
+        else if (!preg_match("/^[a-zA-Z ]{1,50}$/", $City)) {
             $errMsg .= "<p>City is invalid.</p>";
         }
 

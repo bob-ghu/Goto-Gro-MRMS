@@ -6,7 +6,7 @@ if (!isset($_SESSION['database_exist'])) {
 
     require_once('settings.php');
 
-    $mysqli = new mysqli($host, $user, $pwd, $sql_db);
+    $mysqli = new mysqli($host, $user, $pwd);
 
     if ($mysqli->connect_error) {
         die("Database Connection failed: " . $mysqli->connect_error);
