@@ -93,25 +93,21 @@ function validate() { // Function to validate all data
     }
 
     // Street Address
-    var streetaddress1 = document.getElementById("streetaddress1").value;
-    var streetaddress2 = document.getElementById("streetaddress2").value;
+    var streetaddress = document.getElementById("streetaddress").value;
     var streetaddress_error = document.getElementById("streetaddress_error");
     streetaddress_error.innerHTML = "";
-    if (streetaddress1 == "" && streetaddress2 == "") {
+    if (streetaddress == "") {
         streetaddress_error.innerHTML = "Please enter your street address.\n";
-        document.getElementById("streetaddress1").style.borderColor = "red";
-        document.getElementById("streetaddress2").style.borderColor = "red";
+        document.getElementById("streetaddress").style.borderColor = "red";
         result = false;
     }
-    else if (!streetaddress1.match(/[a-zA-Z0-9 ]{1,40}/) && !streetaddress2.match(/[a-zA-Z0-9- ]{1,40}/)) {
+    else if (!streetaddress.match(/[a-zA-Z0-9 ]{1,40}/)) {
         streetaddress_error.innerHTML = "Street address is invalid.\n";
-        document.getElementById("streetaddress1").style.borderColor = "red";
-        document.getElementById("streetaddress2").style.borderColor = "red";
+        document.getElementById("streetaddress").style.borderColor = "red";
         result = false;
     }
     else {
-        document.getElementById("streetaddress1").style.borderColor = "green";
-        document.getElementById("streetaddress2").style.borderColor = "green";
+        document.getElementById("streetaddress").style.borderColor = "green";
     }
 
     // Country

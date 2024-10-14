@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Goto Gro MRMS</title>
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./form.css" />
+</head>
+
+<body>
+  <div class="container">
+    <aside>
+      <div class="top">
+        <div class="logo">
+          <img src="./images/logo.png" alt="Logo" />
+          <h2>Goto<span class="danger">Gro</span></h2>
+        </div>
+        <div class="close" id="close-btn">
+          <span class="material-icons-sharp"> close </span>
+        </div>
+      </div>
+
+      <div class="sidebar">
+        <a href="index.php">
+          <span class="material-icons-sharp"> dashboard </span>
+          <h3>Dashboard</h3>
+        </a>
+        <a href="members.php">
+          <span class="material-icons-sharp"> person_outline </span>
+          <h3>Members</h3>
+        </a>
+        <a href="sales.php" class="active">
+          <span class="material-icons-sharp"> receipt_long </span>
+          <h3>Sales</h3>
+        </a>
+        <a href="#">
+          <span class="material-icons-sharp"> inventory_2 </span>
+          <h3>Inventory </h3>
+        </a>
+
+        <a href="#">
+          <span class="material-icons-sharp"> notifications </span>
+          <h3>Notifications</h3>
+          <span class="message-count">26</span>
+        </a>
+        <a href="#">
+          <span class="material-icons-sharp"> insights </span>
+          <h3>Analytics</h3>
+        </a>
+        <a href="#">
+          <span class="material-icons-sharp"> feedback </span>
+          <h3>Feedback</h3>
+        </a>
+        <a href="#">
+          <span class="material-icons-sharp"> logout </span>
+          <h3>Logout</h3>
+        </a>
+        <!----- EXTRA ----->
+        <a href="#">
+          <span class="material-icons-sharp"> report_gmailerrorred </span>
+          <h3>Reports</h3>
+        </a>
+        <a href="#">
+          <span class="material-icons-sharp"> settings </span>
+          <h3>Settings</h3>
+        </a>
+      </div>
+    </aside>
+
+    <main>
+      <h1>Dashboard</h1>
+
+      <div class="insights">
+        <!-- SALES -->
+        <div class="sales">
+          <span class="material-icons-sharp"> analytics </span>
+          <div class="middle">
+            <div class="left">
+              <h3>Total Sales</h3>
+              <h1>$25,024</h1>
+            </div>
+            <div class="progress">
+              <svg>
+                <circle cx="38" cy="38" r="36"></circle>
+              </svg>
+              <div class="number">
+                <p>81%</p>
+              </div>
+            </div>
+          </div>
+          <small class="text-muted"> Last 24 hours </small>
+        </div>
+
+        <!-- EXPENSES -->
+        <div class="expenses">
+          <span class="material-icons-sharp"> bar_chart </span>
+          <div class="middle">
+            <div class="left">
+              <h3>Total Expenses</h3>
+              <h1>$14,160</h1>
+            </div>
+            <div class="progress">
+              <svg>
+                <circle cx="38" cy="38" r="36"></circle>
+              </svg>
+              <div class="number">
+                <p>62%</p>
+              </div>
+            </div>
+          </div>
+          <small class="text-muted"> Last 24 hours </small>
+        </div>
+
+        <!-- INCOME -->
+        <div class="income">
+          <span class="material-icons-sharp"> stacked_line_chart </span>
+          <div class="middle">
+            <div class="left">
+              <h3>Total Income</h3>
+              <h1>$10,864</h1>
+            </div>
+            <div class="progress">
+              <svg>
+                <circle cx="38" cy="38" r="36"></circle>
+              </svg>
+              <div class="number">
+                <p>44%</p>
+              </div>
+            </div>
+          </div>
+          <small class="text-muted"> Last 24 hours </small>
+        </div>
+      </div>
+    </main>
+
+    <div class="right">
+      <div class="top">
+        <button id="menu-btn">
+          <span class="material-icons-sharp"> menu </span>
+        </button>
+        <div class="profile">
+          <div class="info">
+            <p>Hey, <b>Meow</b></p>
+            <small class="text-muted">Admin</small>
+          </div>
+          <div class="profile-photo">
+            <img src="./images/profile-1.jpg" alt="Profile Picture" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="editMemberModal" class="modal">
+        <div class="modal-content member-form-container">
+            <span class="close" id="closeEditModal">&times;</span>
+            <header>Edit Member</header>
+            <form id="editMemberForm" method="post" action="process_edit.php" class="member-form">
+                <!-- Hidden ID field for member identification -->
+                <input type="hidden" name="id" id="edit_member_id" />
+
+                <!-- Full Name -->
+                <div class="input-box">
+                    <label for="edit_fullname">Full Name</label>
+                    <input type="text" name="fullname" id="edit_fullname" maxlength="50" pattern="^[a-zA-Z ]+$" placeholder="Example: John Doe" required />
+                    <section id="fullname_error" class="error"></section>
+                </div>
+
+                <!-- Email Address -->
+                <div class="input-box">
+                    <label for="edit_email">Email Address</label>
+                    <input type="email" name="email" id="edit_email" placeholder="Example: name@domain.com" required />
+                    <section id="email_error" class="error"></section>
+                </div>
+
+                <!-- Phone Number and Date of Birth -->
+                <div class="column">
+                    <div class="input-box">
+                        <label for="edit_phonenum">Phone Number</label>
+                        <input type="tel" name="phonenum" id="edit_phonenum" maxlength="12" pattern="[0-9 ]{8,12}" placeholder="Example: 012 1234567" required />
+                        <section id="phonenum_error" class="error"></section>
+                    </div>
+                    <div class="input-box">
+                        <label for="edit_dob">Birth Date</label>
+                        <input type="text" name="dob" id="edit_dob" placeholder="dd/mm/yyyy" pattern="\d{1,2}\/\d{1,2}\/\d{4}" required />
+                        <section id="dob_error" class="error"></section>
+                    </div>
+                </div>
+
+                <!-- Gender -->
+                <div class="gender-box">
+                    <h3>Gender</h3>
+                    <div class="gender-option">
+                        <div class="gender">
+                            <input type="radio" name="gender" id="edit_male" value="male" />
+                            <label for="edit_male">Male</label>
+                        </div>
+                        <div class="gender">
+                            <input type="radio" name="gender" id="edit_female" value="female" />
+                            <label for="edit_female">Female</label>
+                        </div>
+                        <div class="gender">
+                            <input type="radio" name="gender" id="edit_not_say" value="not-say" />
+                            <label for="edit_not_say">Prefer Not To Say</label>
+                        </div>
+                    </div>
+                    <section id="gender_error" class="error"></section>
+                </div>
+
+                <!-- Address Details -->
+                <div class="input-box">
+                    <label for="edit_streetaddress">Street Address</label>
+                    <input type="text" name="streetaddress" id="edit_streetaddress" maxlength="50" required />
+                    <section id="streetaddress_error" class="error"></section>
+                </div>
+
+                <div class="column">
+                    <div class="input-box">
+                        <label for="edit_city">City</label>
+                        <input type="text" name="city" id="edit_city" maxlength="50" required />
+                        <section id="city_error" class="error"></section>
+                    </div>
+                    <div class="input-box">
+                        <label for="edit_postalcode">Postal Code</label>
+                        <input type="text" name="postalcode" id="edit_postalcode" maxlength="5" pattern="\d{5}" required />
+                        <section id="postalcode_error" class="error"></section>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit">Confirm Edit</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="./index.js"></script>
+    <script src="form.js"></script>
+    <script src="members.js"></script>
+</div>
+
+    <script src="./index.js"></script>
+  </div>
+</body>
+
+</html>
