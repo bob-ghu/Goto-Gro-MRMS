@@ -4,16 +4,16 @@ CREATE DATABASE IF NOT EXISTS gotogro_mrms;
 USE gotogro_mrms;
 
 CREATE TABLE IF NOT EXISTS members (
-	Member_ID int(5) NOT NULL,
-	Full_Name varchar(50) NOT NULL,
-	Email_Address varchar(50) NOT NULL,
-	Phone_Number varchar(12) NOT NULL,
-	DOB varchar(10) NOT NULL,
-	Gender varchar(7) NOT NULL,
-	Street_Address varchar(50) NOT NULL,
-	Country varchar(50) NOT NULL,
-	City varchar(50) NOT NULL,
-	Postal_Code int(5) NOT NULL
+	Member_ID INT(5) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	Full_Name VARCHAR(50) NOT NULL,
+	Email_Address VARCHAR(50) NOT NULL,
+	Phone_Number VARCHAR(12) NOT NULL,
+	DOB VARCHAR(10) NOT NULL,
+	Gender VARCHAR(7) NOT NULL,
+	Street_Address VARCHAR(50) NOT NULL,
+	Country VARCHAR(50) NOT NULL,
+	City VARCHAR(50) NOT NULL,
+	Postal_Code INT(5) NOT NULL
 );
 
 INSERT IGNORE INTO members ( Member_ID, Full_Name, Email_Address, Phone_Number, DOB, Gender, Street_Address, Country, City, Postal_Code)
@@ -71,16 +71,15 @@ VALUES
 (50, 'Rachel Stewart', 'rachel.stewart@example.ca', '6047654321', '19/11/1992', 'female', '789 West St', 'Canada', 'Calgary', '92217');
 
 CREATE TABLE IF NOT EXISTS inventory (
-    Item_ID int(5) NOT NULL AUTO_INCREMENT,
-    Name varchar(100) NOT NULL,
-    Quantity int(5) NOT NULL,
-    Retail_Price decimal(10, 2) NOT NULL,
-    Selling_Price decimal(10, 2) NOT NULL,
-    Supplier varchar(100) NOT NULL,
-    Category varchar(50) NOT NULL,
-    Brand varchar(50) NOT NULL,
-    Reorder_Level int(5) NOT NULL,
-    PRIMARY KEY (Item_ID)
+    Item_ID INT(5) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Quantity INT(5) NOT NULL,
+    Retail_Price DECIMAL(10, 2) NOT NULL,
+    Selling_Price DECIMAL(10, 2) NOT NULL,
+    Supplier VARCHAR(100) NOT NULL,
+    Category VARCHAR(50) NOT NULL,
+    Brand VARCHAR(50) NOT NULL,
+    Reorder_Level INT(5) NOT NULL
 );
 
 INSERT IGNORE INTO inventory (Name, Quantity, Retail_Price, Selling_Price, Supplier, Category, Brand, Reorder_Level)
@@ -134,3 +133,66 @@ VALUES
 ('Frozen Vegetables', 120, 2.00, 2.50, 'Frozen Farms', 'Frozen Foods', 'Veggie Delight', 30),
 ('Frozen Chicken Nuggets', 90, 3.00, 3.80, 'Frozen Foods Co', 'Frozen Foods', 'Chicken Crunch', 20),
 ('Frozen Fries', 150, 2.50, 3.00, 'Crispy Frozen', 'Frozen Foods', 'Golden Fries', 40);
+
+
+CREATE TABLE IF NOT EXISTS sales (
+    Sales_ID INT(5) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    Member_ID INT(5) NOT NULL, 
+    Item_ID INT(5) NOT NULL,
+    Quantity INT(5) NOT NULL,
+    Price_per_Unit DECIMAL(10, 2) NOT NULL,
+    Total_Price DECIMAL(10, 2) GENERATED ALWAYS AS (Quantity * Price_per_Unit) STORED,
+    Sale_Date TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    Payment_Method VARCHAR(50) NOT NULL,
+    Staff_ID INT(5) NOT NULL,
+    FOREIGN KEY (Member_ID) REFERENCES members(Member_ID),
+    FOREIGN KEY (Item_ID) REFERENCES inventory(Item_ID)
+);
+
+INSERT INTO sales (Member_ID, Item_ID, Quantity, Price_per_Unit, Sale_Date, Payment_Method, Staff_ID)
+VALUES
+(1, 2, 5, 10.99, '2024-09-15 10:15:00', 'Cash', 1),
+(2, 4, 2, 3.50, '2024-09-15 11:30:00', 'Card', 2),
+(3, 1, 3, 12.75, '2024-09-16 14:20:00', 'Cash', 3),
+(4, 5, 1, 25.00, '2024-09-16 09:45:00', 'Card', 1),
+(5, 3, 6, 5.20, '2024-09-17 08:50:00', 'Cash', 2),
+(2, 6, 4, 15.00, '2024-09-18 17:35:00', 'Card', 4),
+(1, 2, 3, 11.00, '2024-09-19 12:40:00', 'Cash', 3),
+(3, 5, 2, 23.50, '2024-09-20 15:25:00', 'Card', 5),
+(2, 4, 5, 4.99, '2024-09-21 18:15:00', 'Cash', 4),
+(4, 3, 7, 6.10, '2024-09-22 09:10:00', 'Card', 1),
+(3, 1, 1, 13.50, '2024-09-23 13:45:00', 'Cash', 2),
+(1, 6, 4, 17.20, '2024-09-24 16:00:00', 'Card', 3),
+(2, 2, 6, 12.99, '2024-09-25 10:30:00', 'Cash', 4),
+(5, 3, 3, 4.80, '2024-09-26 08:25:00', 'Card', 5),
+(4, 5, 2, 20.75, '2024-09-27 11:50:00', 'Cash', 1),
+(1, 1, 5, 14.99, '2024-09-28 14:40:00', 'Card', 2),
+(3, 6, 2, 16.10, '2024-09-29 09:00:00', 'Cash', 4),
+(4, 4, 6, 7.50, '2024-09-30 12:30:00', 'Card', 3),
+(2, 3, 3, 5.25, '2024-10-01 15:15:00', 'Cash', 2),
+(5, 2, 2, 10.50, '2024-10-02 10:00:00', 'Card', 5),
+(3, 5, 4, 22.30, '2024-10-03 11:45:00', 'Cash', 1),
+(1, 6, 3, 19.40, '2024-10-04 14:20:00', 'Card', 4),
+(2, 4, 2, 8.50, '2024-10-05 09:35:00', 'Cash', 2),
+(4, 3, 7, 6.80, '2024-10-06 10:45:00', 'Card', 1),
+(5, 1, 5, 13.99, '2024-10-07 11:30:00', 'Cash', 3),
+(2, 5, 6, 21.50, '2024-10-08 15:00:00', 'Card', 5),
+(1, 4, 4, 9.99, '2024-10-09 13:55:00', 'Cash', 4),
+(3, 2, 3, 11.75, '2024-10-10 14:20:00', 'Card', 2),
+(4, 6, 2, 18.00, '2024-10-11 10:15:00', 'Cash', 1),
+(5, 3, 1, 5.50, '2024-10-12 09:50:00', 'Card', 3),
+(2, 1, 6, 12.10, '2024-10-13 08:25:00', 'Cash', 4),
+(1, 5, 2, 24.30, '2024-10-14 11:10:00', 'Card', 5),
+(3, 4, 7, 9.50, '2024-10-15 16:45:00', 'Cash', 2),
+(4, 2, 3, 10.99, '2024-10-16 14:00:00', 'Card', 1),
+(5, 6, 4, 16.75, '2024-10-17 09:35:00', 'Cash', 4),
+(1, 3, 5, 6.20, '2024-10-18 13:20:00', 'Card', 3),
+(3, 1, 2, 11.50, '2024-10-19 15:00:00', 'Cash', 5),
+(4, 5, 3, 23.40, '2024-10-20 10:40:00', 'Card', 1),
+(2, 4, 2, 8.90, '2024-10-21 09:25:00', 'Cash', 2),
+(5, 6, 6, 18.99, '2024-10-22 12:10:00', 'Card', 4),
+(1, 2, 3, 11.10, '2024-10-23 10:00:00', 'Cash', 3),
+(3, 3, 1, 5.25, '2024-10-24 11:50:00', 'Card', 5),
+(2, 1, 7, 13.99, '2024-10-25 14:10:00', 'Cash', 4),
+(4, 5, 4, 22.70, '2024-10-26 13:00:00', 'Card', 2),
+(5, 4, 2, 9.75, '2024-10-27 16:30:00', 'Cash', 1);
