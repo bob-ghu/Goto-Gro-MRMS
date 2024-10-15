@@ -6,7 +6,7 @@ if (!isset($_SESSION['database_exist'])) {
 
     require_once('settings.php');
 
-    $mysqli = new mysqli($host, $user, $pwd);
+    $mysqli = new mysqli($host, $user, $pwd, $sql_db);
 
     if ($mysqli->connect_error) {
         die("Database Connection failed: " . $mysqli->connect_error);
@@ -26,7 +26,6 @@ if (!isset($_SESSION['database_exist'])) {
         do {
             // Move to the next result in case of multiple queries
         } while ($mysqli->next_result());
-        echo "SQL file executed successfully!";
     } else {
         echo "Error executing SQL file: " . $conn->error;
     }

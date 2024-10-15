@@ -211,7 +211,7 @@ $total_inventory = $row_count['total'];
                                 <th>Supplier</th>
                                 <th>Category</th>
                                 <th>Brand</th>
-                                <th>Reorder_Level</th>
+                                <th>Reorder Level</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -274,20 +274,219 @@ $total_inventory = $row_count['total'];
             <div class="inventory-form-container">
                 <!--Add Members Form-->
                 <h1>Add Inventory</h1>
+                <form id="add" method="post" action="Inventory_Add.php" class="inventory-form" novalidate="novalidate">
+                    <div class="column">
+                        <div class="input-box">
+                            <label>Name</label>
+                            <input type="text" name="name" id="name" maxlength="100" pattern="^[a-zA-Z ]+$" placeholder="Enter Stock Name" required />
+                            <section id="name_error" class="error"></section>
+                        </div>
+                        <div class="input-box">
+                            <label>Quantity</label>
+                            <input type="number" name="quantity" id="quantity" maxlength="5" size="5" pattern="\d{1,5}" placeholder="Enter Quantity" required />
+                            <section id="quantity_error" class="error"></section>
+                        </div>
+                    </div>
+
+                    <div class="column">
+                        <div class="input-box">
+                            <label>Retail Price</label>
+                            <input type="number" step="0.01" name="retail_price" id="retail_price" maxlength="11" size="11" pattern="^\d{1,8}(\.\d{2})?$" placeholder="Enter Retail Price" required />
+                            <section id="retail_price_error" class="error"></section>
+                        </div>
+                        <div class="input-box">
+                            <label>Selling Price</label>
+                            <input type="number" step="0.01" name="selling_price" id="selling_price" maxlength="11" size="11" pattern="^\d{1,8}(\.\d{2})?$" placeholder="Enter Selling Price" required />
+                            <section id="selling_price_error" class="error"></section>
+                        </div>
+                    </div>
+
+                    <div class="input-box">
+                        <label>Supplier</label>
+                        <input type="text" name="supplier" id="supplier" maxlength="50" pattern="^[a-zA-Z ]+$" placeholder="Enter Supplier's Name" required />
+                        <section id="supplier_error" class="error"></section>
+                    </div>
+
+                    <div class="input-box">
+                        <label>Category</label>
+                        <div class="select-box">
+                            <select name="category" id="category" required>
+                                <option hidden value="">Select Category</option>
+                                <option value="fruits_and_vegetables">Fruits and Vegetables</option>
+                                <option value="meat_and_poultry">Meat and Poultry</option>
+                                <option value="seafood">Seafood</option>
+                                <option value="beverages">Beverages</option>
+                                <option value="snacks">Snacks</option>
+                                <option value="frozen_foods">Frozen Foods</option>
+                                <option value="bakery">Bakery</option>
+                                <option value="canned_goods">Canned Goods</option>
+                                <option value="dry_goods">Dry Goods</option>
+                                <option value="personal_care">Personal Care</option>
+                                <option value="household_supplies">Household Supplies</option>
+                                <option value="condiments_and_spices">Condiments and Spices</option>
+                            </select>
+                        </div>
+                        <section id="category_error" class="error"></section>
+                    </div>
+
+                    <div class="column">
+                        <div class="input-box">
+                            <label>Brand Name</label>
+                            <input type="text" name="brand" id="brand" maxlength="50" pattern="^[a-zA-Z ]+$" placeholder="Enter Brand Name" required />
+                            <section id="brand_error" class="error"></section>
+                        </div>
+                        <div class="input-box">
+                            <label>Reorder Level</label>
+                            <input type="number" name="reorder" id="reorder" maxlength="5" size="5" pattern="\d{1,5}" placeholder="Enter Reorder Level" required />
+                            <section id="reorder_error" class="error"></section>
+                        </div>
+                    </div>
+                    <button>Add Inventory</button>
+                </form>
             </div>
         </div>
 
         <div class="edit-inventory-modal-overlay"></div>
-        <!-- Edit Member Modal -->
+        <!-- Edit Inventory Modal -->
 
         <div class="edit-inventory-modal">
             <div class="inventory-form-container">
                 <header>Edit Inventory</header>
+                <form id="add" method="post" action="Inventory_Edit.php" class="inventory-form" novalidate="novalidate">
+                <input type= "hidden" name="Item_ID" id="editItemID">
+                    <div class="column">
+                        <div class="input-box">
+                            <label>Name</label>
+                            <input type="text" name="name_edit" id="name_edit" maxlength="100" pattern="^[a-zA-Z ]+$" placeholder="Enter Stock Name" required />
+                            <section id="name_error" class="error"></section>
+                        </div>
+                        <div class="input-box">
+                            <label>Quantity</label>
+                            <input type="number" name="quantity_edit" id="quantity_edit" maxlength="5" size="5" pattern="\d{1,5}" placeholder="Enter Quantity" required />
+                            <section id="quantity_error" class="error"></section>
+                        </div>
+                    </div>
+
+                    <div class="column">
+                        <div class="input-box">
+                            <label>Retail Price</label>
+                            <input type="number" step="0.01" name="retail_price_edit" id="retail_price_edit" maxlength="11" size="11" pattern="^\d{1,8}(\.\d{2})?$" placeholder="Enter Retail Price" required />
+                            <section id="retail_price_error" class="error"></section>
+                        </div>
+                        <div class="input-box">
+                            <label>Selling Price</label>
+                            <input type="number" step="0.01" name="selling_price_edit" id="selling_price_edit" maxlength="11" size="11" pattern="^\d{1,8}(\.\d{2})?$" placeholder="Enter Selling Price" required />
+                            <section id="selling_price_error" class="error"></section>
+                        </div>
+                    </div>
+
+                    <div class="input-box">
+                        <label>Supplier</label>
+                        <input type="text" name="supplier_edit" id="supplier_edit" maxlength="50" pattern="^[a-zA-Z ]+$" placeholder="Enter Supplier's Name" required />
+                        <section id="supplier_error" class="error"></section>
+                    </div>
+
+                    <div class="input-box">
+                        <label>Category</label>
+                        <div class="select-box">
+                            <select name="category_edit" id="category_edit" required>
+                                <option hidden value="">Select Category</option>
+                                <option value="fruits_and_vegetables">Fruits and Vegetables</option>
+                                <option value="meat_and_poultry">Meat and Poultry</option>
+                                <option value="seafood">Seafood</option>
+                                <option value="beverages">Beverages</option>
+                                <option value="dairy">Dairy</option>
+                                <option value="snacks">Snacks</option>
+                                <option value="frozen_foods">Frozen Foods</option>
+                                <option value="bakery">Bakery</option>
+                                <option value="canned_goods">Canned Goods</option>
+                                <option value="dry_goods">Dry Goods</option>
+                                <option value="personal_care">Personal Care</option>
+                                <option value="household_supplies">Household Supplies</option>
+                                <option value="condiments_and_spices">Condiments and Spices</option>
+                            </select>
+                        </div>
+                        <section id="category_error" class="error"></section>
+                    </div>
+
+                    <div class="column">
+                        <div class="input-box">
+                            <label>Brand Name</label>
+                            <input type="text" name="brand_edit" id="brand_edit" maxlength="50" pattern="^[a-zA-Z ]+$" placeholder="Enter Brand Name" required />
+                            <section id="brandname_error" class="error"></section>
+                        </div>
+                        <div class="input-box">
+                            <label>Reorder Level</label>
+                            <input type="number" name="reorder_edit" id="reorder_edit" maxlength="5" size="5" pattern="\d{1,5}" placeholder="Enter Reorder Level" required />
+                            <section id="reorder_error" class="error"></section>
+                        </div>
+                    </div>
+                    <button>Save Changes</button>
+                </form>
             </div>
         </div>
 
         <script src="./index.js"></script>
-        <script src="form.js"></script>
+        <script src="inventory.js"></script>
+        <script src="inventoryform.js"></script>
+
+        <script>
+        // JavaScript function to send AJAX request to PHP
+        function requestInventoryInfo(record) {
+            // Make a GET request to the PHP script using fetch()
+            fetch('request_inventory.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain', // Specify plain text format
+                },
+                body: record.getAttribute('data-inventory-id')
+            })
+            .then(response => response.json()) // Expect a json response
+            .then(data => {
+                    if (data.error) {
+                        console.log("error"); // Debugging
+                    } else {
+                        const excludedCategory = data.Category;
+                        const categories = [
+                            "Fruits and Vegetables",
+                            "Meat and Poultry",
+                            "Seafood",
+                            "Beverages",
+                            "Dairy",
+                            "Snacks",
+                            "Frozen Foods",
+                            "Bakery",
+                            "Canned Goods",
+                            "Dry Goods",
+                            "Personal Care",
+                            "Household Supplies",
+                            "Condiments and Spices"
+                        ];
+
+                        // Build the select box options
+                        let selectBox = "<option value=\"" + excludedCategory + "\">" + excludedCategory.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase()) + "</option>";
+                        for (const category of categories) {
+                            if (category !== excludedCategory) {
+                                selectBox += "<option value=\"" + category + "\">" + category.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase()) + "</option>";
+                            }
+                        }
+                        
+                        // Fill in the form fields with data
+                        document.getElementById('name_edit').value = data.Name;
+                        document.getElementById('quantity_edit').value = data.Quantity;
+                        document.getElementById('retail_price_edit').value = data.Retail_Price;
+                        document.getElementById('selling_price_edit').value = data.Selling_Price;
+                        document.getElementById('supplier_edit').value = data.Supplier;
+                        document.getElementById('category_edit').innerHTML = selectBox;
+                        document.getElementById('brand_edit').value = data.Brand;
+                        document.getElementById('reorder_edit').value = data.Reorder_Level;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+        </script>
     </div>
 </body>
 

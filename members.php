@@ -42,7 +42,7 @@ $total_members = $row_count['total'];
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
     <link rel="stylesheet" href="./style.css" />
     <link rel="stylesheet" href="./member.css" />
-    <link rel="stylesheet" href="./form.css" />
+    <link rel="stylesheet" href="./memberform.css" />
 </head>
 
 <body>
@@ -70,14 +70,14 @@ $total_members = $row_count['total'];
                     <h3>Members</h3>
                 </a>
 
-                <a href="#">
-                    <span class="material-icons-sharp"> receipt_long </span>
-                    <h3>Sales</h3>
-                </a>
-
-                <a href="#">
+                <a href="inventory.php">
                     <span class="material-icons-sharp"> inventory_2 </span>
                     <h3>Inventory </h3>
+                </a>
+
+                <a href="sales.php">
+                    <span class="material-icons-sharp"> receipt_long </span>
+                    <h3>Sales</h3>
                 </a>
 
                 <a href="#">
@@ -391,11 +391,12 @@ $total_members = $row_count['total'];
         <div class="edit-modal">
             <div class="member-form-container">
                 <header>Edit Member</header>
-                <form id="add" method="post" action="" class="member-form" novalidate="novalidate">
+                <form id="add" method="post" action="Process_Edit.php" class="member-form" novalidate="novalidate">
+                <input type= "hidden" name="Member_ID" id="editMemberID">
                     <!--Full Name-->
                     <div class="input-box">
-                        <label id="cock">Full Name</label>
-                        <input type="text" name="fullname" id="fullname_edit" maxlength="50" pattern="^[a-zA-Z ]+$" placeholder="Example: John Doe" value="" required />
+                        <label>Full Name</label>
+                        <input type="text" name="fullname_edit" id="fullname_edit" maxlength="50" pattern="^[a-zA-Z ]+$" placeholder="Example: John Doe" value="" required />
                         <section id="fullname_error" class="error"></section>
                     </div>
 
@@ -429,19 +430,19 @@ $total_members = $row_count['total'];
                         <div class="gender-option">
                             <!--Male-->
                             <div class="gender">
-                                <input type="radio" name="gender" id="check-male_edit" value="male"/>
+                                <input type="radio" name="gender" id="check-male_edit" value="male" />
                                 <label for="check-male">Male</label>
                             </div>
 
                             <!--Female-->
                             <div class="gender">
-                                <input type="radio" name="gender" id="check-female_edit" value="female"/>
+                                <input type="radio" name="gender" id="check-female_edit" value="female" />
                                 <label for="check-female">Female</label>
                             </div>
 
                             <!--Not to Say-->
                             <div class="gender">
-                                <input type="radio" name="gender" id="check-others_edit" value="not-say"/>
+                                <input type="radio" name="gender" id="check-others_edit" value="not-say" />
                                 <label for="check-others">Prefer Not To Say</label>
                             </div>
                             <section id="gender_error" class="error"></section>
@@ -487,77 +488,75 @@ $total_members = $row_count['total'];
         </div>
 
         <script src="./index.js"></script>
-        <script src="form.js"></script>
+        <script src="memberform.js"></script>
         <script src="members.js"></script>
 
         <script>
-        // JavaScript function to send AJAX request to PHP
-        function requestMemberInfo(record) {
-            // Make a GET request to the PHP script using fetch()
-            fetch('request_member.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'text/plain', // Specify plain text format
-                },
-                body: record.getAttribute('data-member-id')
-            })
-            .then(response => response.json())  // Expect a json response
-            .then(data => {
-                if (data.error) {
-                    console.log("error"); // Debugging
-                } else {
-                    var gender;
-                    if (data.Gender == "male") {
-                        gender = "check-male";
-                    }
-                    else if (data.Gender == "female") {
-                        gender = "check-female";
-                    }
-                    else {
-                        gender = "check-others";
-                    }
+            // JavaScript function to send AJAX request to PHP
+            function requestMemberInfo(record) {
+                // Make a GET request to the PHP script using fetch()
+                fetch('request_member.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'text/plain', // Specify plain text format
+                        },
+                        body: record.getAttribute('data-member-id')
+                    })
+                    .then(response => response.json()) // Expect a json response
+                    .then(data => {
+                        if (data.error) {
+                            console.log("error"); // Debugging
+                        } else {
+                            var gender;
+                            if (data.Gender == "male") {
+                                gender = "check-male";
+                            } else if (data.Gender == "female") {
+                                gender = "check-female";
+                            } else {
+                                gender = "check-others";
+                            }
 
-                    const excludedCountry = data.Country.charAt(0).toUpperCase() + data.Country.slice(1);
-                    const countries = [
-                        "Canada",
-                        "USA",
-                        "Japan",
-                        "India",
-                        "Malaysia",
-                        "Singapore",
-                        "South Korea",
-                        "Myanmar",
-                        "Vietnam",
-                        "Brunei",
-                        "China",
-                        "Sweden",
-                        "France",
-                        "Germany"
-                    ];
-                    
-                    var selectBox = "";
-                    selectBox += "<option value=\"" + excludedCountry + "\">" + excludedCountry + "</option>";
-                    for (const country of countries) {
-                        if (country !== excludedCountry) {
-                            selectBox += "<option value=\"" + country + "\">" + country + "</option>";
+                            const excludedCountry = data.Country.charAt(0).toUpperCase() + data.Country.slice(1);
+                            const countries = [
+                                "Canada",
+                                "USA",
+                                "Japan",
+                                "India",
+                                "Malaysia",
+                                "Singapore",
+                                "South Korea",
+                                "Myanmar",
+                                "Vietnam",
+                                "Brunei",
+                                "China",
+                                "Sweden",
+                                "France",
+                                "Germany"
+                            ];
+
+                            var selectBox = "";
+                            selectBox += "<option value=\"" + excludedCountry + "\">" + excludedCountry + "</option>";
+                            for (const country of countries) {
+                                if (country !== excludedCountry) {
+                                    selectBox += "<option value=\"" + country + "\">" + country + "</option>";
+                                }
+                            }
+
+                            document.getElementById('fullname_edit').value = data.Full_Name;
+                            document.getElementById('email_edit').value = data.Email_Address;
+                            document.getElementById('phonenum_edit').value = data.Phone_Number;
+                            document.getElementById('dob_edit').value = data.DOB;
+                            document.getElementById(gender + '_edit').checked = true;
+                            document.getElementById('streetaddress_edit').value = data.Street_Address;
+                            document.getElementById('country_edit').innerHTML = selectBox;
+                            document.getElementById('city_edit').value = data.City;
+                            document.getElementById('postalcode_edit').value = data.Postal_Code;
                         }
-                    }
-
-                    document.getElementById('fullname_edit').value = data.Full_Name;
-                    document.getElementById('email_edit').value = data.Email_Address;
-                    document.getElementById('phonenum_edit').value = data.Phone_Number;
-                    document.getElementById('dob_edit').value = data.DOB;
-                    document.getElementById(gender + '_edit').checked = true;
-                    document.getElementById('streetaddress_edit').value = data.Street_Address;
-                    document.getElementById('country_edit').innerHTML = selectBox;
-                    document.getElementById('city_edit').value = data.City;
-                    document.getElementById('postalcode_edit').value = data.Postal_Code;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            }
         </script>
     </div>
 </body>
