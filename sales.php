@@ -38,13 +38,13 @@ $query2 = "SELECT Member_ID, Full_Name FROM members";
 $result2 = $conn->query($query2);
 
 if ($result2->num_rows > 0) {
-    // Store members in an array
-    $members = [];
-    while ($row = $result2->fetch_assoc()) {
-        $members[] = $row;
-    }
+  // Store members in an array
+  $members = [];
+  while ($row = $result2->fetch_assoc()) {
+    $members[] = $row;
+  }
 } else {
-    $members = [];
+  $members = [];
 }
 
 // Fetch products from the database
@@ -52,13 +52,13 @@ $query3 = "SELECT Item_ID, Name FROM inventory";
 $result3 = $conn->query($query3);
 
 if ($result3->num_rows > 0) {
-    // Store products in an array
-    $items= [];
-    while ($row = $result3->fetch_assoc()) {
-        $items[] = $row;
-    }
+  // Store products in an array
+  $items = [];
+  while ($row = $result3->fetch_assoc()) {
+    $items[] = $row;
+  }
 } else {
-    $items = [];
+  $items = [];
 }
 ?>
 
@@ -283,23 +283,21 @@ if ($result3->num_rows > 0) {
     <!-- Modal Overlay (Form is moved outside the container) -->
     <div class="modal-overlay"></div>
 
-    <!-- Registration Form in Modal -->
     <div class="modal">
       <div class="sales-form-container">
-        <!--Add Members Form-->
         <h1>Add Sales</h1>
+
         <form id="add" method="post" action="Sales_Add.php" class="sales-form" novalidate="novalidate">
-          <!--Member Selection-->
           <div class="input-box">
             <label for="member_id">Member</label>
-            <div class="select-box">
+            <div class="select-box member-box">
               <select name="member_id" id="member_id" required>
                 <option value="">Select a member</option>
-                <!-- Populate this with dynamic options based on members in the system -->
+
                 <?php
-                // Loop through the members and populate the options dynamically
+
                 foreach ($members as $member) {
-                    echo '<option value="' . $member['Member_ID'] . '">' . htmlspecialchars($member['Full_Name']) . '</option>';
+                  echo '<option value="' . $member['Member_ID'] . '">' . htmlspecialchars($member['Full_Name']) . '</option>';
                 }
                 ?>
               </select>
@@ -312,11 +310,11 @@ if ($result3->num_rows > 0) {
             <!--Payment Method-->
             <div class="input-box">
               <label for="payment_method">Payment Method</label>
-              <div class="select-box">
+              <div class="select-box payment-box">
                 <select name="payment_method" id="payment_method" required>
                   <option value="">Select payment method</option>
-                  <option value="cash">Cash</option>
-                  <option value="card">Card</option>
+                  <option value="Cash">Cash</option>
+                  <option value="Card">Card</option>
                 </select>
               </div>
 
@@ -326,7 +324,7 @@ if ($result3->num_rows > 0) {
             <!--Staff ID (Optional)-->
             <div class="input-box">
               <label for="staff_id">Processed By (Staff)</label>
-              <div class="select-box">
+              <div class="select-box staff-box">
                 <select name="staff_id" id="staff_id">
                   <option value="">Select staff</option>
                   <!-- Populate this with dynamic options based on employees -->
@@ -360,168 +358,197 @@ if ($result3->num_rows > 0) {
       </div>
     </div>
 
+    <?php
+    if (isset($_GET['success']) && $_GET['success'] === '1') {
+      echo "<script>alert('Sales successfully added!');</script>";
+    }
+    ?>
+
     <div class="edit-modal-overlay"></div>
     <!-- Edit Member Modal -->
 
     <div class="edit-modal">
       <div class="sales-form-container">
-        <header>Edit Sales</header>
+        <h1>Edit Sales</h1>
         <form id="add" method="post" action="Sales_Edit.php" class="sales-form" novalidate="novalidate">
           <input type="hidden" name="Sales_ID" id="editSalesID">
-          <!--Full Name-->
+          <!--Member Selection-->
           <div class="input-box">
-            <label>Full Name</label>
-            <input type="text" name="fullname_edit" id="fullname_edit" maxlength="50" pattern="^[a-zA-Z ]+$" placeholder="Example: John Doe" value="" required />
-            <section id="fullname_error" class="error"></section>
-          </div>
-
-          <!--Email Address-->
-          <div class="input-box">
-            <label>Email Address</label>
-            <input type="text" name="email" id="email_edit" pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$" placeholder="Example: name@domain.com" value="" required />
-            <section id="email_error" class="error"></section>
-          </div>
-
-          <!--Merge Column-->
-          <div class="column">
-            <!--Phone Number-->
-            <div class="input-box">
-              <label>Phone Number</label>
-              <input type="tel" name="phonenum" id="phonenum_edit" maxlength="12" pattern="[0-9 ]{8,12}" placeholder="Example: 012 1234567" value="" required />
-              <section id="phonenum_error" class="error"></section>
-            </div>
-
-            <!--Birth Date-->
-            <div class="input-box">
-              <label>Birth Date</label>
-              <input type="text" name="dob" id="dob_edit" placeholder="dd/mm/yyyy" pattern="\d{1,2}\/\d{1,2}\/\d{4}" placeholder="dd/mm/yyyy" value="" required />
-              <section id="dob_error" class="error"></section>
-            </div>
-          </div>
-
-          <!--Gender Box-->
-          <div class="gender-box">
-            <h3>Gender</h3>
-            <div class="gender-option">
-              <!--Male-->
-              <div class="gender">
-                <input type="radio" name="gender" id="check-male_edit" value="male" />
-                <label for="check-male">Male</label>
-              </div>
-
-              <!--Female-->
-              <div class="gender">
-                <input type="radio" name="gender" id="check-female_edit" value="female" />
-                <label for="check-female">Female</label>
-              </div>
-
-              <!--Not to Say-->
-              <div class="gender">
-                <input type="radio" name="gender" id="check-others_edit" value="not-say" />
-                <label for="check-others">Prefer Not To Say</label>
-              </div>
-              <section id="gender_error" class="error"></section>
-            </div>
-          </div>
-
-          <!--Address Column-->
-          <div class="input-box address">
-
-            <!--Street Address-->
-            <label>Street Address</label>
-            <input type="text" name="streetaddress" id="streetaddress_edit" maxlength="50" size="50" pattern="[a-zA-Z ]{1,50}" placeholder="Example: 123 Jalan Sultan" value="" required />
-            <section id="streetaddress_error" class="error"></section>
-
-            <br>
-
-            <!--Country-->
-            <label>Country</label>
+            <label for="member_id">Member</label>
             <div class="select-box">
-              <select name="country" id="country_edit" required>
-                <!--A select box of countries will be dynamically inserted here-->
+              <select name="member_id" id="member_edit" required>
+                <!-- Populate this with dynamic options based on members in the system -->
               </select>
             </div>
-            <section id="country_error" class="error"></section>
-            <div class="column">
-              <!--City-->
-              <div class="input-box">
-                <label>City</label>
-                <input type="text" name="city" id="city_edit" maxlength="50" size="50" pattern="[a-zA-Z ]{1,50}" placeholder="Example: Kuala Lumpur" value="" required />
-                <section id="city_error" class="error"></section>
+
+            <section id="member_error" class="error"></section>
+          </div>
+
+          <div class="column">
+            <!--Payment Method-->
+            <div class="input-box">
+              <label for="payment_method">Payment Method</label>
+              <div class="select-box">
+                <select name="payment_method" id="payment_method" required>
+                  <option value="">Select payment method</option>
+                  <option value="Cash">Cash</option>
+                  <option value="Card">Card</option>
+                </select>
               </div>
-              <!--Postcode-->
-              <div class="input-box">
-                <label>Postal Code</label>
-                <input type="text" name="postalcode" id="postalcode_edit" maxlength="5" size="5" pattern="\d{5}" placeholder="Example: 45600" value="" required />
-                <section id="postalcode_error" class="error"></section>
+
+              <section id="payment_error" class="error"></section>
+            </div>
+
+            <!--Staff ID (Optional)-->
+            <div class="input-box">
+              <label for="staff_id">Processed By (Staff)</label>
+              <div class="select-box">
+                <select name="staff_id" id="staff_edit">
+                  <!-- Populate this with dynamic options based on employees -->
+                </select>
               </div>
+
+              <section id="staff_error" class="error"></section>
             </div>
           </div>
-          <button>Save Changes</button>
+
+          <div class="column">
+            <div class="input-box">
+              <label for="product_select">Product</label>
+              <div class="select-box">
+                <select name="inventory_id" id="product_select" required>
+                  <option value="">Select a product</option>
+                </select>
+              </div>
+              <section id="product_error" class="error"></section>
+            </div>
+
+            <div class="input-box">
+              <label for="quantity">Quantity</label>
+              <input type="number" name="quantity" id="quantity" min="1" placeholder="Enter quantity" required />
+              <section id="quantity_error" class="error"></section>
+            </div>
+          </div>
+          <button class="edit">Save Changes</button>
         </form>
       </div>
     </div>
 
-    <script src="./index.js"></script>
-    <script src="salesform.js"></script>
-    <script src="sales.js"></script>
-
     <?php
-      // Generate product options in PHP
-      $productOptions = '';
-      foreach ($items as $product) {
-          $productOptions .= '<option value="' . $product['Item_ID'] . '">' . htmlspecialchars($product['Name']) . '</option>';
-      }
+    // Generate product options in PHP
+    $productOptions = '';
+    foreach ($items as $product) {
+      $productOptions .= '<option value="' . $product['Item_ID'] . '">' . htmlspecialchars($product['Name']) . '</option>';
+    }
     ?>
+  </div>
 
-    <script>
-      let productCount = 0; // To keep track of the number of products added
+  <script>
+    let productCount = 0; // To keep track of the number of products added
 
-      const productOptions = `<?php echo $productOptions; ?>`;
+    const productOptions = `<?php echo $productOptions; ?>`;
 
-      document.getElementById('add-product-btn').addEventListener('click', function() {
-        productCount++;
+    document.getElementById('add-product-btn').addEventListener('click', function() {
+      productCount++;
 
-        // Create a new product and quantity selection block
-        const productBlock = document.createElement('div');
-        productBlock.classList.add('input-box');
-        productBlock.innerHTML = `
-      <div class="product-item">
-        <div class="column">
-          <div class="input-box">
-            <label for="product_${productCount}">Product</label>
-            <div class="select-box">
-              <select name="inventory_id[]" id="product_${productCount}" required>
-          
-                <option value="">Select a product</option>
-                ${productOptions}
-              </select>
-            </div>
+      // Create a new product and quantity selection block
+      const productBlock = document.createElement('div');
+      productBlock.classList.add('input-box');
+      productBlock.innerHTML = `
+    <div class="product-item">
+      <div class="column">
+        <div class="input-box">
+          <label for="product_${productCount}">Product</label>
+          <div class="select-box product-box">
+            <select name="inventory_id[]" id="product_${productCount}" required>
+        
+              <option value="">Select a product</option>
+              ${productOptions}
+            </select>
           </div>
-
-          <div class="input-box">
-            <label for="quantity_${productCount}">Quantity</label>
-            <input type="number" name="quantity[]" id="quantity_${productCount}" min="1" placeholder="Enter quantity" required />
-          </div>
+          <section id="product_${productCount}_error" class="error"></section>
         </div>
-        <button type="button" class="remove-product-btn">Remove</button>
+
+        <div class="input-box">
+          <label for="quantity_${productCount}">Quantity</label>
+          <input type="number" name="quantity[]" id="quantity_${productCount}" min="1" placeholder="Enter quantity" required />
+          <section id="quantity_${productCount}_error" class="error"></section>
+        </div>
       </div>
+      <button type="button" class="remove-product-btn">Remove</button>
+    </div>
     `;
 
-        // Append the new product block to the product list section
-        document.getElementById('product-list').appendChild(productBlock);
+      // Append the new product block to the product list section
+      document.getElementById('product-list').appendChild(productBlock);
 
-        // Add event listener to the remove button
-        productBlock.querySelector('.remove-product-btn').addEventListener('click', function() {
-          productBlock.remove();
-        });
+      // Add event listener to the remove button
+      productBlock.querySelector('.remove-product-btn').addEventListener('click', function() {
+        productBlock.remove();
+        productCount--;
       });
-    </script>
+    });
+  </script>
+  <script>
+    // JavaScript function to send AJAX request to PHP
+    function requestSalesInfo(record) {
+      // Make a GET request to the PHP script using fetch()
+      fetch('request_sales.php', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json', // Specify plain text format
+          },
+          body: record.getAttribute('data-sales-id')
+      })
+      .then(response => response.json()) // Expect a json response
+      .then(data => {
+        if (data.error) {
+            console.log("error"); // Debugging
+        } else {
+            const excludedMember = data.Request_Data.Member_Name;
+
+            var selectBox_members = "";
+            selectBox_members += "<option value=\"" + excludedMember + "\">" + excludedMember + "</option>";
+            data.Members_Table.forEach(member => {
+              if (member.Full_Name !== excludedMember) {
+                  selectBox_members += "<option value=\"" + member.Full_Name + "\">" + member.Full_Name + "</option>";
+                }
+            });
+
+            const excludedStaff = "Staff " + data.Request_Data.Staff_ID;
+            const staffs = [
+                "Staff 1",
+                "Staff 2",
+                "Staff 3",
+                "Staff 4",
+                "Staff 5"
+            ];
+
+            var selectBox_staff = "";
+            selectBox_staff += "<option value=\"" + excludedStaff + "\">" + excludedStaff + "</option>";
+            for (const staff of staffs) {
+                if (staff !== excludedStaff) {
+                  selectBox_staff += "<option value=\"" + staff + "\">" + staff + "</option>";
+                }
+            }
+
+            document.getElementById('member_edit').innerHTML = selectBox_members;
+            //document.getElementById('payment_method_edit').value = data.Payment_Method;
+            document.getElementById('staff_edit').innerHTML = selectBox_staff;
+            //document.getElementById('product_select').value = data.Item_Name;
+        }
+      })
+      .catch(error => {
+          console.error('Error:', error);
+      });
+    }
+  </script>
+  <script src="./index.js"></script>
+  <script src="salesform.js"></script>
+  <script src="sales.js"></script>
+
   </div>
 
-  <script src="./index.js"></script>
-  <script src="sales.js"></script>
-  </div>
 </body>
 
 </html>
