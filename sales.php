@@ -370,13 +370,13 @@ if ($result3->num_rows > 0) {
     <div class="edit-modal">
       <div class="sales-form-container">
         <h1>Edit Sales</h1>
-        <form id="add" method="post" action="Sales_Edit.php" class="sales-form" novalidate="novalidate">
+        <form id="edit" method="post" action="Sales_Edit.php" class="sales-form" novalidate="novalidate">
           <input type="hidden" name="Sales_ID" id="editSalesID">
           <!--Member Selection-->
           <div class="input-box">
             <label for="member_id">Member</label>
             <div class="select-box">
-              <select name="member_id" id="member_edit" required>
+              <select name="member_edit" id="member_edit" required>
                 <!-- Populate this with dynamic options based on members in the system -->
               </select>
             </div>
@@ -389,10 +389,8 @@ if ($result3->num_rows > 0) {
             <div class="input-box">
               <label for="payment_method">Payment Method</label>
               <div class="select-box">
-                <select name="payment_method" id="payment_method" required>
-                  <option value="">Select payment method</option>
-                  <option value="Cash">Cash</option>
-                  <option value="Card">Card</option>
+                <select name="payment_method_edit" id="payment_method_edit" required>
+
                 </select>
               </div>
 
@@ -403,7 +401,7 @@ if ($result3->num_rows > 0) {
             <div class="input-box">
               <label for="staff_id">Processed By (Staff)</label>
               <div class="select-box">
-                <select name="staff_id" id="staff_edit">
+                <select name="staff_edit" id="staff_edit">
                   <!-- Populate this with dynamic options based on employees -->
                 </select>
               </div>
@@ -414,18 +412,18 @@ if ($result3->num_rows > 0) {
 
           <div class="column">
             <div class="input-box">
-              <label for="product_select">Product</label>
+              <label>Product</label>
               <div class="select-box">
-                <select name="inventory_id" id="product_select" required>
-                  <option value="">Select a product</option>
+                <select name="product_edit" id="product_edit" required>
+                  <!-- Populate this with dynamic options based on products -->
                 </select>
               </div>
               <section id="product_error" class="error"></section>
             </div>
 
             <div class="input-box">
-              <label for="quantity">Quantity</label>
-              <input type="number" name="quantity" id="quantity" min="1" placeholder="Enter quantity" required />
+              <label>Quantity</label>
+              <input type="number" name="quantity_edit" id="quantity_edit" min="1" placeholder="Enter quantity" required />
               <section id="quantity_error" class="error"></section>
             </div>
           </div>
@@ -508,34 +506,58 @@ if ($result3->num_rows > 0) {
             const excludedMember = data.Request_Data.Member_Name;
 
             var selectBox_members = "";
-            selectBox_members += "<option value=\"" + excludedMember + "\">" + excludedMember + "</option>";
+            selectBox_members += "<option value=\"" + data.Request_Data.Member_ID + "\">" + excludedMember + "</option>";
             data.Members_Table.forEach(member => {
               if (member.Full_Name !== excludedMember) {
-                  selectBox_members += "<option value=\"" + member.Full_Name + "\">" + member.Full_Name + "</option>";
+                  selectBox_members += "<option value=\"" + member.Member_ID + "\">" + member.Full_Name + "</option>";
                 }
             });
 
-            const excludedStaff = "Staff " + data.Request_Data.Staff_ID;
+            const excludedPayment = data.Request_Data.Payment_Method;
+
+            var selectBox_payment = "";
+            selectBox_payment += "<option value=\"" + excludedPayment + "\">" + excludedPayment + "</option>";
+            if (excludedPayment == "Cash") {
+              selectBox_payment += "<option value=Card>Card</option>";
+            }
+            else {
+              selectBox_payment += "<option value=Cash>Cash</option>";
+            }
+
+            const excludedStaff = data.Request_Data.Staff_ID;
             const staffs = [
-                "Staff 1",
-                "Staff 2",
-                "Staff 3",
-                "Staff 4",
-                "Staff 5"
+                1,
+                2,
+                3,
+                4,
+                5
             ];
 
             var selectBox_staff = "";
             selectBox_staff += "<option value=\"" + excludedStaff + "\">" + excludedStaff + "</option>";
             for (const staff of staffs) {
-                if (staff !== excludedStaff) {
+                if (staff != excludedStaff) {
                   selectBox_staff += "<option value=\"" + staff + "\">" + staff + "</option>";
                 }
             }
 
+            const excludedItem = data.Request_Data.Item_Name;
+
+            var selectBox_inventory = "";
+            selectBox_inventory += "<option value=\"" + data.Request_Data.Item_ID + "\">" + excludedItem + "</option>";
+            data.Inventory_Table.forEach(item => {
+              if (item.Name !== excludedItem) {
+                selectBox_inventory += "<option value=\"" + item.Item_ID + "\">" + item.Name + "</option>";
+                }
+            });
+
             document.getElementById('member_edit').innerHTML = selectBox_members;
-            //document.getElementById('payment_method_edit').value = data.Payment_Method;
+            document.getElementById('payment_method_edit').innerHTML = selectBox_payment;
             document.getElementById('staff_edit').innerHTML = selectBox_staff;
-            //document.getElementById('product_select').value = data.Item_Name;
+            document.getElementById('product_edit').innerHTML = selectBox_inventory;
+            document.getElementById('quantity_edit').value = data.Request_Data.Quantity;
+
+            previousSalesItem(data.Request_Data.Item_ID, data.Request_Data.Quantity);
         }
       })
       .catch(error => {
@@ -543,6 +565,59 @@ if ($result3->num_rows > 0) {
       });
     }
   </script>
+  <script>
+    function previousSalesItem(itemID, quantity) {
+      sessionStorage.setItem('previousItemID', itemID);
+      sessionStorage.setItem('previousQuantity', quantity);
+    }
+
+    const form = document.getElementById('edit');
+          
+    // Add a 'submit' event listener
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+
+      sessionStorage.setItem('currentItemID', document.getElementById('product_edit').value);
+      sessionStorage.setItem('currentQuantity', document.getElementById('quantity_edit').value);
+      
+      form.submit();
+    });
+
+    <?php if (isset($_SESSION['editSuccess'])): ?>
+      updateInventory(); // Call your function
+      <?php unset($_SESSION['editSuccess']); ?> // Clear the session variable
+    <?php endif; ?>
+
+    function updateInventory() {
+      const data = {
+        Previous_Item_ID: sessionStorage.getItem('previousItemID'),
+        Previous_Quantity: sessionStorage.getItem('previousQuantity'),
+        Current_Item_ID: sessionStorage.getItem('currentItemID'),
+        Current_Quantity: sessionStorage.getItem('currentQuantity')
+      };
+
+      fetch('update_inventory.php', {
+      method: 'POST', // Use POST method
+      headers: {
+          'Content-Type': 'application/json', // Specify the content type
+      },
+      body: JSON.stringify(data) // Convert data to JSON string
+      })
+      .then(response => response.text()) // Parse the JSON response
+      .then(data => {
+        console.log('Success:', data); // Handle success
+      })
+      .catch((error) => {
+        console.error('Error:', error); // Handle error
+      });
+    }
+  </script>
+  <?php
+    if (isset($_SESSION['editSuccess'])) {
+      unset($_SESSION['editSuccess']);
+      echo "<script>updateInventory();</script>";
+    }
+  ?>
   <script src="./index.js"></script>
   <script src="salesform.js"></script>
   <script src="sales.js"></script>

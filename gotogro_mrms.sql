@@ -179,3 +179,12 @@ VALUES
 (18, 18, 5, 7.50, '2024-10-17 12:54:11', 'Card', 4),-- Tuna at 7.50 per unit
 (19, 19, 2, 18.00, '2024-10-17 15:16:32', 'Card', 2),-- Crab Meat at 18.00 per unit
 (20, 20, 1, 25.00, '2024-10-18 10:33:51', 'Cash', 1);      -- Lobster Tail at 25.00 per unit
+
+CREATE TABLE notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    message TEXT NOT NULL,
+    notification_type ENUM('info', 'alert', 'warning') NOT NULL,
+    is_read BOOLEAN DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+

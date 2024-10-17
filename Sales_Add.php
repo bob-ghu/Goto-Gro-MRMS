@@ -1,7 +1,7 @@
-<?php 
+<?php
 if (!isset($_POST["member_id"])) {
-    header("Location: sales.php"); 
-    exit; 
+    header("Location: sales.php");
+    exit;
 }
 
 require_once('settings.php');
@@ -12,7 +12,8 @@ if (!$conn) {
     exit;
 } else {
     // Function to sanitize input
-    function sanitise_input($data) {
+    function sanitise_input($data)
+    {
         if (is_array($data)) {
             return array_map('sanitise_input', $data);
         } else {
@@ -108,7 +109,7 @@ if (!$conn) {
             $Quantity = $quantities[$i];
 
             // Debugging: Check Item_ID and Quantity
-            echo "<p>Processing Item ID: '$Item_ID', Quantity: '$Quantity'</p>";
+            //echo "<p>Processing Item ID: '$Item_ID', Quantity: '$Quantity'</p>";
 
             // Check for empty Item_ID and Quantity before proceeding
             if (empty($Item_ID) || empty($Quantity) || $Quantity < 1) {
@@ -117,11 +118,12 @@ if (!$conn) {
             }
 
             // Fetch the Price per Unit for the selected Item_ID from the inventory table
-            $sql = "SELECT Selling_Price, Quantity, Reorder_Level FROM inventory WHERE Item_ID = '$Item_ID'";
+            $sql = "SELECT Name, Selling_Price, Quantity, Reorder_Level FROM inventory WHERE Item_ID = '$Item_ID'";
             $result = mysqli_query($conn, $sql);
             if ($result) {
                 $row = mysqli_fetch_assoc($result);
                 if ($row) {
+                    $productName = $row['Name'];
                     $Price_per_Unit = $row['Selling_Price'];
                     $AvailableStock = $row['Quantity'];
                     $Reorder_Level = $row['Reorder_Level'];
@@ -134,16 +136,22 @@ if (!$conn) {
                             VALUES ('$Member_ID', '$Item_ID', '$Quantity', '$Price_per_Unit', '$Total_Price', '$Payment_Method', '$Staff_ID', NOW())";
 
                     $query = mysqli_query($conn, $sql);
-                    if($query) {
+                    if ($query) {
                         // Correct update query for stock
                         $sql_update = "UPDATE inventory SET Quantity = Quantity - $Quantity WHERE Item_ID = '$Item_ID'";
                         $update_query = mysqli_query($conn, $sql_update);
-                        if($update_query)
-                        {
+                        if ($update_query) {
                             $latest_Quantity = $AvailableStock - $Quantity;
-                            if($latest_Quantity <= $Reorder_Level)
-                            {
-                                echo "<p>Warning: Stock for Item ID $Item_ID is below reorder level. Current stock: $latest_Quantity, Reorder level: $Reorder_Level.</p>";
+                            if ($latest_Quantity == 0) {
+                                // Create a warning notification if the stock is 0
+                                $message = "Warning: Stock for $productName is now zero!";
+                                $insertNotificationSql = "INSERT INTO notifications (message, notification_type) VALUES ('$message', 'warning')";
+                                mysqli_query($conn, $insertNotificationSql);
+                            } elseif ($latest_Quantity <= $Reorder_Level) {
+                                // Create an emergency notification if the stock is below reorder level
+                                $message = "Stock for $productName is below reorder level. Current stock: $latest_Quantity, Reorder level: $reorder_Level.";
+                                $insertNotificationSql = "INSERT INTO notifications (message, notification_type) VALUES ('$message', 'alert')";
+                                mysqli_query($conn, $insertNotificationSql);
                             }
                         } else {
                             echo "<p>Error updating stock for Item ID: $Item_ID. ", mysqli_error($conn), "</p>";
