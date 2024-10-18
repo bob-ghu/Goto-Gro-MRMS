@@ -78,3 +78,81 @@ main .member-detail a {
     color: var(--color-primary);
 }
 /* END RECENT MEMBER */
+
+/* START MEMBER SEARCH */
+.right .notification-section {
+    margin-top: 2rem;
+  }
+  .right .notification-section h2 {
+    margin-bottom: 0.8rem;
+  }
+  
+  .right .notification-section .message-count{
+    background: var(--color-danger);
+    color: var(--color-white);
+    margin-left: 0.5rem;
+    padding: 2px 9px;
+    font-size: 18px;
+    border-radius: var(--border-radius-1);
+  }
+  
+  .right .notification-section .item {
+    background: var(--color-white);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.7rem;
+    padding: 1.4rem var(--card-padding);
+    border-radius: var(--border-radius-3);
+    box-shadow: var(--box-shadow);
+    transition: all 300ms ease;
+  }
+  
+  .right .notification-section .item:hover {
+    cursor: pointer;
+    box-shadow: none;
+  }
+  .right .notification-section .item .right {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin: 0;
+    width: 100%;
+  }
+  .right .notification-section .item .icon {
+    color: var(--color-white);
+    border-radius: 50%;
+    background: var(--color-primary);
+    display: flex;
+  }
+  
+  .right .notification-section .item .icon .material-icons-sharp{
+    font-size: 35px;
+  }
+  
+  .right .notification-section .item.alert .icon {
+    background: var(--color-warning);
+    
+  }
+  
+  .right .notification-section .item.warning .icon {
+    background: var(--color-danger);
+  }
+  
+  .right .notification-section .item.info .icon {
+    background: var(--color-primary);
+  }
+  
+  .right .notification-section .item.alert {
+    background: var(--color-warning);
+    
+  }
+  
+  .right .notification-section .item.warning {
+    background: var(--color-danger);
+  }
+  
+  .right .notification-section .item.info {
+    background: var(--color-primary);
+  }
+  /* END MEMBER SEARCH */

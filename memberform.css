@@ -164,6 +164,8 @@
 /* Hide modal by default */
 .modal {
   display: none;
+  max-height: 100%; /* Set a maximum height */
+  overflow-y: auto; /* Enable vertical scrolling */
 }
 
 /* Show modal when the 'show' class is added */
@@ -203,6 +205,8 @@
 
 .edit-modal {
   display: none;
+  max-height: 100%; /* Set a maximum height */
+  overflow-y: auto; /* Enable vertical scrolling */
 }
 
 /* Show modal when the 'show' class is added */

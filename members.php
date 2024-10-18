@@ -28,6 +28,21 @@ $sql_count = "SELECT COUNT(*) AS total FROM members";
 $count_result = $conn->query($sql_count);
 $row_count = $count_result->fetch_assoc();
 $total_members = $row_count['total'];
+
+//Notification Count
+$unread = "SELECT message, notification_type FROM notifications WHERE is_read = 0";
+$notiCount = mysqli_query($conn, $unread);
+$query2 = "SELECT noti, created_at, notification_type FROM notifications WHERE is_read = 0 ORDER BY created_at DESC LIMIT 3";
+$result2 = mysqli_query($conn, $query2);
+
+//Side Recent Sales
+$salesQuery = "SELECT members.Member_ID, members.Full_Name, inventory.Item_ID, inventory.Name, sales.Quantity, sales.Sale_Date, sales.Sales_ID
+               FROM sales 
+               JOIN members ON sales.Member_ID = members.Member_ID
+               JOIN inventory ON sales.Item_ID = inventory.Item_ID
+               ORDER BY Sale_Date DESC LIMIT 3";
+
+$salesResult = $conn->query($salesQuery);
 ?>
 
 <!DOCTYPE html>
@@ -80,10 +95,14 @@ $total_members = $row_count['total'];
                     <h3>Sales</h3>
                 </a>
 
-                <a href="#">
+                <a href="notification.php">
                     <span class="material-icons-sharp"> notifications </span>
                     <h3>Notifications</h3>
-                    <span class="message-count">26</span>
+                    <?php if (mysqli_num_rows($notiCount) > 0): ?>
+                        <span class="message-count">
+                            <?php echo mysqli_num_rows($notiCount); ?>
+                        </span>
+                    <?php endif; ?>
                 </a>
 
                 <a href="#">
@@ -188,6 +207,33 @@ $total_members = $row_count['total'];
                     <div class="member-detail-header">
                         <h2>Member's Detail</h2>
 
+                        <form method="get" action="">
+                            <div class="search-row">
+
+                                <div class="search-select-box">
+                                    <p>Search by:</p>
+                                    <select name="search-column" id="search-column">
+                                        <option value="Member_ID">Member ID</option>
+                                        <option value="Full_Name">Full Name</option>
+                                        <option value="Email_Address">Email</option>
+                                        <option value="Phone_Number">Phone</option>
+                                        <option value="DOB">Date of Birth</option>
+                                        <option value="Gender">Gender</option>
+                                        <option value="Street_Address">Street Address</option>
+                                        <option value="Country">Country</option>
+                                        <option value="City">City</option>
+                                        <option value="Postal_Code">Postal Code</option>
+                                    </select>
+                                </div>
+
+                                <div class="search-container">
+                                    <input type="text" name="search_bar" id="search_bar" maxlength="40" placeholder="Search" />
+                                    <button type="submit"><span class="material-icons-sharp">search</span></button>
+                                </div>
+
+                            </div>
+                        </form>
+
                         <div class="add-member">
                             <div>
                                 <span class="material-icons-sharp">add</span>
@@ -214,21 +260,55 @@ $total_members = $row_count['total'];
                         </thead>
                         <tbody>
                             <?php
-                            if ($result->num_rows > 0) {
-                                while ($row = $result->fetch_assoc()) {
-                                    echo "<tr>";
-                                    echo "<td>" . $row["Member_ID"] . "</td>";
-                                    echo "<td>" . $row["Full_Name"] . "</td>";
-                                    echo "<td>" . $row["Email_Address"] . "</td>";
-                                    echo "<td>" . $row["Phone_Number"] . "</td>";
-                                    echo "<td>" . $row["DOB"] . "</td>";
-                                    echo "<td>" . $row["Gender"] . "</td>";
-                                    echo "<td>" . $row["Street_Address"] . "</td>";
-                                    echo "<td>" . $row["Country"] . "</td>";
-                                    echo "<td>" . $row["City"] . "</td>";
-                                    echo "<td>" . $row["Postal_Code"] . "</td>";
-                                    echo "<td><a class='edit-member' onclick=\"requestMemberInfo(this)\" data-member-id='" . $row["Member_ID"] . "'>Edit</a></td>";
-                                    echo "</tr>";
+                            if (isset($_GET['search_bar'])) {
+                                // Retrieve the search term from the form and sanitize it
+                                $search_term = $conn->real_escape_string($_GET['search_bar']);
+
+                                // Retrieve the selected search column
+                                $search_column = $_GET['search-column'];
+
+                                // Construct the SQL query based on the selected column
+                                $sql_search = "SELECT * FROM members WHERE $search_column LIKE '%$search_term%'";
+
+                                $result_search = $conn->query($sql_search);
+
+                                // Check if any results were found
+                                if ($result_search->num_rows > 0) {
+                                    while ($row = $result_search->fetch_assoc()) {
+                                        echo "<tr>";
+                                        echo "<td>" . htmlspecialchars($row['Member_ID']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row['Full_Name']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row['Email_Address']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row['Phone_Number']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row['DOB']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row['Gender']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row['Street_Address']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row['Country']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row['City']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row['Postal_Code']) . "</td>";
+                                        echo "<td><a class='edit-member' onclick=\"requestMemberInfo(this)\" data-member-id='" . htmlspecialchars($row["Member_ID"]) . "'>Edit</a></td>";
+                                        echo "</tr>";
+                                    }
+                                } else {
+                                    echo "No results found.";
+                                }
+                            } else {
+                                if ($result->num_rows > 0) {
+                                    while ($row = $result->fetch_assoc()) {
+                                        echo "<tr>";
+                                        echo "<td>" . $row["Member_ID"] . "</td>";
+                                        echo "<td>" . $row["Full_Name"] . "</td>";
+                                        echo "<td>" . $row["Email_Address"] . "</td>";
+                                        echo "<td>" . $row["Phone_Number"] . "</td>";
+                                        echo "<td>" . $row["DOB"] . "</td>";
+                                        echo "<td>" . $row["Gender"] . "</td>";
+                                        echo "<td>" . $row["Street_Address"] . "</td>";
+                                        echo "<td>" . $row["Country"] . "</td>";
+                                        echo "<td>" . $row["City"] . "</td>";
+                                        echo "<td>" . $row["Postal_Code"] . "</td>";
+                                        echo "<td><a class='edit-member' onclick=\"requestMemberInfo(this)\" data-member-id='" . $row["Member_ID"] . "'>Edit</a></td>";
+                                        echo "</tr>";
+                                    }
                                 }
                             }
                             ?>
@@ -260,6 +340,65 @@ $total_members = $row_count['total'];
                         <img src="./images/profile-1.jpg" alt="Profile Picture" />
                     </div>
                 </div>
+            </div>
+
+            <!-- Side Notification -->
+            <div class="notification-section">
+
+                <h2>Notifications
+                    <?php if (mysqli_num_rows($notiCount) > 0): ?>
+                        <span class="message-count">
+                            <?php echo mysqli_num_rows($notiCount); ?>
+                        </span>
+                    <?php endif; ?>
+                </h2>
+
+                <a href="notification.php">
+                    <?php
+                    if ($result2 && mysqli_num_rows($result2) > 0) {
+                        // Fetch notifications from the result set
+                        while ($row = mysqli_fetch_assoc($result2)) {
+                            $noti = $row['noti'];
+                            $date = $row['created_at'];
+                            $type = $row['notification_type']; // e.g., 'success', 'error', 'warning'
+                    ?>
+                            <div class="item <?php echo $type; ?>">
+                                <div class="icon">
+                                    <span class="material-icons-sharp"><?php echo $type === 'alert' ? 'error' : ($type === 'warning' ? 'warning' : 'info'); ?></span>
+                                </div>
+                                <div class="message-content">
+                                    <b><?php echo $noti; ?></b>
+                                    <p><?php echo $date; ?></p> <!-- Date will appear on the next line -->
+                                </div>
+                            </div>
+                    <?php
+                        }
+                    } else {
+                        // If no notifications are found
+                        echo '<div class="item info"><div class="icon"><span class="material-icons-sharp">info</span></div>No new notifications.</div>';
+                    }
+                    ?>
+                </a>
+            </div>
+
+            <!-- Side Recent Sales -->
+            <div class="recent-sales">
+                <h2>Recent Sales</h2>
+                <?php if ($salesResult && $salesResult->num_rows > 0): ?>
+                    <?php while ($row = $salesResult->fetch_assoc()): ?>
+                        <div class="updates">
+                            <a href="sales.php?Sales_ID=<?php echo $row['Sales_ID']; ?>">
+                                <div class="message">
+                                    <b><?php echo htmlspecialchars($row['Full_Name']); ?></b><br>
+                                    <span><?php echo htmlspecialchars($row['Name']) . ' ' . htmlspecialchars($row['Quantity']); ?></span><br>
+                                    <br><small class="text-muted"><?php echo htmlspecialchars($row['Sale_Date']); ?></small>
+                                </div>
+                            </a>
+                        </div>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <p>No recent sales available.</p>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -312,19 +451,19 @@ $total_members = $row_count['total'];
                         <div class="gender-option">
                             <!--Male-->
                             <div class="gender">
-                                <input type="radio" name="gender" id="check-male" value="male" />
+                                <input type="radio" name="gender" id="check-male" value="Male" />
                                 <label for="check-male">Male</label>
                             </div>
 
                             <!--Female-->
                             <div class="gender">
-                                <input type="radio" name="gender" id="check-female" value="female" />
+                                <input type="radio" name="gender" id="check-female" value="Female" />
                                 <label for="check-female">Female</label>
                             </div>
 
                             <!--Not to Say-->
                             <div class="gender">
-                                <input type="radio" name="gender" id="check-others" value="not-say" />
+                                <input type="radio" name="gender" id="check-others" value="Not-say" />
                                 <label for="check-others">Prefer Not To Say</label>
                             </div>
                             <section id="gender_error" class="error"></section>
@@ -344,7 +483,7 @@ $total_members = $row_count['total'];
                     <div class="input-box">
                         <!--Country-->
                         <label>Country</label>
-                        <div class="select-box">
+                        <div class="select-box addcountry-box">
                             <select name="country" id="country" required>
                                 <option value="">Select your country</option>
                                 <option value="canada">Canada</option>
@@ -391,20 +530,20 @@ $total_members = $row_count['total'];
         <div class="edit-modal">
             <div class="member-form-container">
                 <header>Edit Member</header>
-                <form id="add" method="post" action="Process_Edit.php" class="member-form" novalidate="novalidate">
-                <input type= "hidden" name="Member_ID" id="editMemberID">
+                <form id="edit" method="post" action="Process_Edit.php" class="member-form" novalidate="novalidate">
+                    <input type="hidden" name="Member_ID" id="editMemberID">
                     <!--Full Name-->
                     <div class="input-box">
                         <label>Full Name</label>
                         <input type="text" name="fullname_edit" id="fullname_edit" maxlength="50" pattern="^[a-zA-Z ]+$" placeholder="Example: John Doe" value="" required />
-                        <section id="fullname_error" class="error"></section>
+                        <section id="fullname_edit_error" class="error"></section>
                     </div>
 
                     <!--Email Address-->
                     <div class="input-box">
                         <label>Email Address</label>
                         <input type="text" name="email" id="email_edit" pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$" placeholder="Example: name@domain.com" value="" required />
-                        <section id="email_error" class="error"></section>
+                        <section id="email_edit_error" class="error"></section>
                     </div>
 
                     <!--Merge Column-->
@@ -413,14 +552,14 @@ $total_members = $row_count['total'];
                         <div class="input-box">
                             <label>Phone Number</label>
                             <input type="tel" name="phonenum" id="phonenum_edit" maxlength="12" pattern="[0-9 ]{8,12}" placeholder="Example: 012 1234567" value="" required />
-                            <section id="phonenum_error" class="error"></section>
+                            <section id="phonenum_edit_error" class="error"></section>
                         </div>
 
                         <!--Birth Date-->
                         <div class="input-box">
                             <label>Birth Date</label>
                             <input type="text" name="dob" id="dob_edit" placeholder="dd/mm/yyyy" pattern="\d{1,2}\/\d{1,2}\/\d{4}" placeholder="dd/mm/yyyy" value="" required />
-                            <section id="dob_error" class="error"></section>
+                            <section id="dob_edit_error" class="error"></section>
                         </div>
                     </div>
 
@@ -430,22 +569,22 @@ $total_members = $row_count['total'];
                         <div class="gender-option">
                             <!--Male-->
                             <div class="gender">
-                                <input type="radio" name="gender" id="check-male_edit" value="male" />
+                                <input type="radio" name="gender" id="check-male_edit" value="Male" />
                                 <label for="check-male">Male</label>
                             </div>
 
                             <!--Female-->
                             <div class="gender">
-                                <input type="radio" name="gender" id="check-female_edit" value="female" />
+                                <input type="radio" name="gender" id="check-female_edit" value="Female" />
                                 <label for="check-female">Female</label>
                             </div>
 
                             <!--Not to Say-->
                             <div class="gender">
-                                <input type="radio" name="gender" id="check-others_edit" value="not-say" />
+                                <input type="radio" name="gender" id="check-others_edit" value="Not-say" />
                                 <label for="check-others">Prefer Not To Say</label>
                             </div>
-                            <section id="gender_error" class="error"></section>
+                            <section id="gender_edit_error" class="error"></section>
                         </div>
                     </div>
 
@@ -455,30 +594,30 @@ $total_members = $row_count['total'];
                         <!--Street Address-->
                         <label>Street Address</label>
                         <input type="text" name="streetaddress" id="streetaddress_edit" maxlength="50" size="50" pattern="[a-zA-Z ]{1,50}" placeholder="Example: 123 Jalan Sultan" value="" required />
-                        <section id="streetaddress_error" class="error"></section>
+                        <section id="streetaddress_edit_error" class="error"></section>
 
                         <br>
 
                         <!--Country-->
                         <label>Country</label>
-                        <div class="select-box">
+                        <div class="select-box editcountry-box">
                             <select name="country" id="country_edit" required>
                                 <!--A select box of countries will be dynamically inserted here-->
                             </select>
                         </div>
-                        <section id="country_error" class="error"></section>
+                        <section id="country_edit_error" class="error"></section>
                         <div class="column">
                             <!--City-->
                             <div class="input-box">
                                 <label>City</label>
                                 <input type="text" name="city" id="city_edit" maxlength="50" size="50" pattern="[a-zA-Z ]{1,50}" placeholder="Example: Kuala Lumpur" value="" required />
-                                <section id="city_error" class="error"></section>
+                                <section id="city_edit_error" class="error"></section>
                             </div>
                             <!--Postcode-->
                             <div class="input-box">
                                 <label>Postal Code</label>
                                 <input type="text" name="postalcode" id="postalcode_edit" maxlength="5" size="5" pattern="\d{5}" placeholder="Example: 45600" value="" required />
-                                <section id="postalcode_error" class="error"></section>
+                                <section id="postalcode_edit_error" class="error"></section>
                             </div>
                         </div>
                     </div>
@@ -508,9 +647,9 @@ $total_members = $row_count['total'];
                             console.log("error"); // Debugging
                         } else {
                             var gender;
-                            if (data.Gender == "male") {
+                            if (data.Gender == "Male") {
                                 gender = "check-male";
-                            } else if (data.Gender == "female") {
+                            } else if (data.Gender == "Female") {
                                 gender = "check-female";
                             } else {
                                 gender = "check-others";

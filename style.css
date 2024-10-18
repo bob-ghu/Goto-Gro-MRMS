@@ -205,6 +205,61 @@ aside .sidebar .message-count {
 /* END SIDEBAR */
 /* END ASIDE */
 
+/*Search Bar*/
+/* Container for search bar and select box */
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Add some spacing between the search and select box */
+  width: 42.5rem;
+  margin-top: -1rem;
+}
+
+.search-container {
+  position: relative;
+  flex-grow: 1; /* Search bar takes more space */
+  top: 1.25rem;
+  width: 100%;
+}
+
+.search-container input {
+  width: 100%;
+  padding: 0.75rem 2.5rem 0.75rem 1rem; /* Add space for the icon */
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.search-container input:focus {
+  border-color: #666;
+}
+
+/* Style for the search icon */
+.search-container .material-icons-sharp {
+  position: absolute;
+  right: 10px; /* Adjust this value based on padding */
+  top: 10px;
+  font-size: 1.5rem;
+  color: #999;
+  cursor: pointer;
+}
+
+/* Style for select box */
+.search-select-box select {
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+  background-color: #7380ec;
+  color: white;
+  font-weight: 600;
+}
+
 
 
 /* START MAIN */
@@ -355,40 +410,54 @@ main .insights small {
   text-align: right;
 }
 
-/* START RECENT UPDATES */
-.right .recent-updates {
+/* START RECENT SALES */
+.right .recent-sales {
   margin-top: 1rem;
 }
-.right .recent-updates h2 {
+.right .recent-sales h2 {
   margin-bottom: 0.8rem;
 }
-.right .recent-updates .updates {
+.right .recent-sales .updates {
   background: var(--color-white);
-  padding: var(--card-padding);
+  padding: 1.5rem;
   border-radius: var(--card-border-radius);
   box-shadow: var(--box-shadow);
   transition: all 300ms ease;
+  margin-bottom: 1rem;
 }
-.right .recent-updates .updates:hover {
+.right .recent-sales .updates:hover {
   cursor: pointer;
   box-shadow: none;
 }
-.right .recent-updates .updates .update {
+.right .recent-sales .updates .update {
   display: grid;
   grid-template-columns: 2.6rem auto;
   gap: 1rem;
-  margin-bottom: 1rem;
+}
+
+.right .recent-sales .updates .message {
+  white-space: nowrap; /* Prevent wrapping */
 }
 /* END RECENT UPDATES */
 
-/* START SALES ANALYTICS */
-.right .sales-analytics {
+/* START SIDE NOTIFICATION */
+.right .notification-section {
   margin-top: 2rem;
 }
-.right .sales-analytics h2 {
+.right .notification-section h2 {
   margin-bottom: 0.8rem;
 }
-.right .sales-analytics .item {
+
+.right .notification-section .message-count{
+  background: var(--color-danger);
+  color: var(--color-white);
+  margin-left: 0.5rem;
+  padding: 2px 9px;
+  font-size: 18px;
+  border-radius: var(--border-radius-1);
+}
+
+.right .notification-section .item {
   background: var(--color-white);
   display: flex;
   align-items: center;
@@ -399,32 +468,55 @@ main .insights small {
   box-shadow: var(--box-shadow);
   transition: all 300ms ease;
 }
-.right .sales-analytics .item:hover {
+
+.right .notification-section .item:hover {
   cursor: pointer;
   box-shadow: none;
 }
-.right .sales-analytics .item .right {
+.right .notification-section .item .right {
   display: flex;
   justify-content: space-between;
   align-items: start;
   margin: 0;
   width: 100%;
 }
-.right .sales-analytics .item .icon {
-  padding: 0.6rem;
+.right .notification-section .item .icon {
   color: var(--color-white);
   border-radius: 50%;
   background: var(--color-primary);
   display: flex;
 }
-.right .sales-analytics .item.offline .icon {
-  background: var(--color-danger);
-}
-.right .sales-analytics .item.customers .icon {
-  background: var(--color-success);
+
+.right .notification-section .item .icon .material-icons-sharp{
+  font-size: 35px;
 }
 
-/* END SALES ANALYTICS */
+.right .notification-section .item.alert .icon {
+  background: var(--color-warning);
+  
+}
+
+.right .notification-section .item.warning .icon {
+  background: var(--color-danger);
+}
+
+.right .notification-section .item.info .icon {
+  background: var(--color-primary);
+}
+
+.right .notification-section .item.alert {
+  background: var(--color-warning);
+  
+}
+
+.right .notification-section .item.warning {
+  background: var(--color-danger);
+}
+
+.right .notification-section .item.info {
+  background: var(--color-primary);
+}
+/* END SIDE NOTIFICATION */
 /* END RIGHT SECTION */
 
 /* START MEDIA QUERIES */

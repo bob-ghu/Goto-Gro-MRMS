@@ -77,7 +77,7 @@
             $Gender = $_POST["gender"];
             $Gender = sanitise_input($Gender);
         }
-        if (!($Gender == "male" || $Gender == "female" || $Gender == "not-say")) {
+        if (!($Gender == "Male" || $Gender == "Female" || $Gender == "Not-say")) {
             $errMsg .= "<p>You must select a gender.</p>";
         }
 

@@ -38,13 +38,13 @@ $query2 = "SELECT Member_ID, Full_Name FROM members";
 $result2 = $conn->query($query2);
 
 if ($result2->num_rows > 0) {
-    // Store members in an array
-    $members = [];
-    while ($row = $result2->fetch_assoc()) {
-        $members[] = $row;
-    }
+  // Store members in an array
+  $members = [];
+  while ($row = $result2->fetch_assoc()) {
+    $members[] = $row;
+  }
 } else {
-    $members = [];
+  $members = [];
 }
 
 // Fetch products from the database
@@ -52,14 +52,29 @@ $query3 = "SELECT Item_ID, Name FROM inventory";
 $result3 = $conn->query($query3);
 
 if ($result3->num_rows > 0) {
-    // Store products in an array
-    $items= [];
-    while ($row = $result3->fetch_assoc()) {
-        $items[] = $row;
-    }
+  // Store products in an array
+  $items = [];
+  while ($row = $result3->fetch_assoc()) {
+    $items[] = $row;
+  }
 } else {
-    $items = [];
+  $items = [];
 }
+
+//Notification Count
+$unread = "SELECT message, notification_type FROM notifications WHERE is_read = 0";
+$notiCount = mysqli_query($conn, $unread);
+$query2 = "SELECT noti, created_at, notification_type FROM notifications WHERE is_read = 0 ORDER BY created_at DESC LIMIT 3";
+$recentNoti = mysqli_query($conn, $query2);
+
+//Side Recent Sales
+$salesQuery = "SELECT members.Member_ID, members.Full_Name, inventory.Item_ID, inventory.Name, sales.Quantity, sales.Sale_Date, sales.Sales_ID
+               FROM sales 
+               JOIN members ON sales.Member_ID = members.Member_ID
+               JOIN inventory ON sales.Item_ID = inventory.Item_ID
+               ORDER BY Sale_Date DESC LIMIT 3";
+
+$salesResult = $conn->query($salesQuery);
 ?>
 
 <!DOCTYPE html>
@@ -107,10 +122,14 @@ if ($result3->num_rows > 0) {
           <span class="material-icons-sharp"> receipt_long </span>
           <h3>Sales</h3>
         </a>
-        <a href="#">
+        <a href="notification.php">
           <span class="material-icons-sharp"> notifications </span>
           <h3>Notifications</h3>
-          <span class="message-count">26</span>
+          <?php if (mysqli_num_rows($notiCount) > 0): ?>
+            <span class="message-count">
+              <?php echo mysqli_num_rows($notiCount); ?>
+            </span>
+          <?php endif; ?>
         </a>
         <a href="#">
           <span class="material-icons-sharp"> insights </span>
@@ -207,6 +226,31 @@ if ($result3->num_rows > 0) {
           <div class="sales-detail-header">
             <h2>Sales' Detail</h2>
 
+            <form method="get" action="">
+              <div class="search-row">
+
+                <div class="search-select-box">
+                  <p>Search by:</p>
+                  <select name="search-column" id="search-column">
+                    <option value="Sales_ID">Sales ID</option>
+                    <option value="members.Full_Name">Member Name</option>
+                    <option value="inventory.Name">Item Name</option>
+                    <option value="sales.Quantity">Quantity</option>
+                    <option value="Price_per_Unit">Price per Unit</option>
+                    <option value="Total_Price">Total Price</option>
+                    <option value="Sale_Date">Sale Date</option>
+                    <option value="Payment_Method">Payment Method</option>
+                    <option value="Staff_ID">Staff ID</option>
+                  </select>
+                </div>
+
+                <div class="search-container">
+                  <input type="text" name="search_bar" id="search_bar" maxlength="40" placeholder="Search" />
+                  <button type="submit"><span class="material-icons-sharp">search</span></button>
+                </div>
+              </div>
+            </form>
+
             <div class="add-sales">
               <div>
                 <span class="material-icons-sharp">add</span>
@@ -232,20 +276,56 @@ if ($result3->num_rows > 0) {
             </thead>
             <tbody>
               <?php
-              if ($result->num_rows > 0) {
-                while ($row = $result->fetch_assoc()) {
-                  echo "<tr>";
-                  echo "<td>" . $row["Sales_ID"] . "</td>";
-                  echo "<td>" . $row["Member_Name"] . "</td>";
-                  echo "<td>" . $row["Item_Name"] . "</td>";
-                  echo "<td>" . $row["Quantity"] . "</td>";
-                  echo "<td>" . $row["Price_per_Unit"] . "</td>";
-                  echo "<td>" . $row["Total_Price"] . "</td>";
-                  echo "<td>" . $row["Sale_Date"] . "</td>";
-                  echo "<td>" . $row["Payment_Method"] . "</td>";
-                  echo "<td>" . $row["Staff_ID"] . "</td>";
-                  echo "<td><a class='edit-sales' onclick=\"requestSalesInfo(this)\" data-sales-id='" . $row["Sales_ID"] . "'>Edit</a></td>";
-                  echo "</tr>";
+              if (isset($_GET['search_bar'])) {
+                // Retrieve the search term from the form and sanitize it
+                $search_term = $conn->real_escape_string($_GET['search_bar']);
+
+                // Retrieve the selected search column
+                $search_column = $_GET['search-column'];
+
+                // Construct the SQL query based on the selected column
+                $sql_search = "SELECT sales.Sales_ID, members.Full_Name AS Member_Name, inventory.Name AS Item_Name, sales.Quantity, 
+                sales.Price_per_Unit, sales.Total_Price, sales.Sale_Date, sales.Payment_Method, sales.Staff_ID FROM sales 
+                JOIN members ON sales.Member_ID = members.Member_ID JOIN inventory ON sales.Item_ID = inventory.Item_ID 
+                WHERE $search_column LIKE '%$search_term%'";
+
+                $result_search = $conn->query($sql_search);
+
+                // Check if any results were found
+                if ($result_search->num_rows > 0) {
+                  while ($row = $result_search->fetch_assoc()) {
+                    echo "<tr>";
+                    echo "<td>" . htmlspecialchars($row['Sales_ID']) . "</td>";
+                    echo "<td>" . htmlspecialchars($row['Member_Name']) . "</td>";
+                    echo "<td>" . htmlspecialchars($row['Item_Name']) . "</td>";
+                    echo "<td>" . htmlspecialchars($row['Quantity']) . "</td>";
+                    echo "<td>" . htmlspecialchars($row['Price_per_Unit']) . "</td>";
+                    echo "<td>" . htmlspecialchars($row['Total_Price']) . "</td>";
+                    echo "<td>" . htmlspecialchars($row['Sale_Date']) . "</td>";
+                    echo "<td>" . htmlspecialchars($row['Payment_Method']) . "</td>";
+                    echo "<td>" . htmlspecialchars($row['Staff_ID']) . "</td>";
+                    echo "<td><a class='edit-sales' onclick=\"requestSalesInfo(this)\" data-sales-id='" . $row["Sales_ID"] . "'>Edit</a></td>";
+                    echo "</tr>";
+                  }
+                } else {
+                  echo "No results found.";
+                }
+              } else {
+                if ($result->num_rows > 0) {
+                  while ($row = $result->fetch_assoc()) {
+                    echo "<tr>";
+                    echo "<td>" . $row["Sales_ID"] . "</td>";
+                    echo "<td>" . $row["Member_Name"] . "</td>";
+                    echo "<td>" . $row["Item_Name"] . "</td>";
+                    echo "<td>" . $row["Quantity"] . "</td>";
+                    echo "<td>" . $row["Price_per_Unit"] . "</td>";
+                    echo "<td>" . $row["Total_Price"] . "</td>";
+                    echo "<td>" . $row["Sale_Date"] . "</td>";
+                    echo "<td>" . $row["Payment_Method"] . "</td>";
+                    echo "<td>" . $row["Staff_ID"] . "</td>";
+                    echo "<td><a class='edit-sales' onclick=\"requestSalesInfo(this)\" data-sales-id='" . $row["Sales_ID"] . "'>Edit</a></td>";
+                    echo "</tr>";
+                  }
                 }
               }
               ?>
@@ -278,28 +358,85 @@ if ($result3->num_rows > 0) {
           </div>
         </div>
       </div>
+
+      <!-- Side Notification -->
+      <div class="notification-section">
+
+        <h2>Notifications
+          <?php if (mysqli_num_rows($notiCount) > 0): ?>
+            <span class="message-count">
+              <?php echo mysqli_num_rows($notiCount); ?>
+            </span>
+          <?php endif; ?>
+        </h2>
+
+        <a href="notification.php">
+          <?php
+          if ($recentNoti && mysqli_num_rows($recentNoti) > 0) {
+            // Fetch notifications from the result set
+            while ($row = mysqli_fetch_assoc($recentNoti)) {
+              $noti = $row['noti'];
+              $date = $row['created_at'];
+              $type = $row['notification_type']; // e.g., 'success', 'error', 'warning'
+          ?>
+              <div class="item <?php echo $type; ?>">
+                <div class="icon">
+                  <span class="material-icons-sharp"><?php echo $type === 'alert' ? 'error' : ($type === 'warning' ? 'warning' : 'info'); ?></span>
+                </div>
+                <div class="message-content">
+                  <b><?php echo $noti; ?></b>
+                  <p><?php echo $date; ?></p> <!-- Date will appear on the next line -->
+                </div>
+              </div>
+          <?php
+            }
+          } else {
+            // If no notifications are found
+            echo '<div class="item info"><div class="icon"><span class="material-icons-sharp">info</span></div>No new notifications.</div>';
+          }
+          ?>
+        </a>
+      </div>
+
+      <!-- Side Recent Sales -->
+      <div class="recent-sales">
+        <h2>Recent Sales</h2>
+        <?php if ($salesResult && $salesResult->num_rows > 0): ?>
+          <?php while ($row = $salesResult->fetch_assoc()): ?>
+            <div class="updates">
+              <a href="sales.php?Sales_ID=<?php echo $row['Sales_ID']; ?>">
+                <div class="message">
+                  <b><?php echo htmlspecialchars($row['Full_Name']); ?></b><br>
+                  <span><?php echo htmlspecialchars($row['Name']) . ' ' . htmlspecialchars($row['Quantity']); ?></span><br>
+                  <br><small class="text-muted"><?php echo htmlspecialchars($row['Sale_Date']); ?></small>
+                </div>
+              </a>
+            </div>
+          <?php endwhile; ?>
+        <?php else: ?>
+          <p>No recent sales available.</p>
+        <?php endif; ?>
+      </div>
     </div>
 
     <!-- Modal Overlay (Form is moved outside the container) -->
     <div class="modal-overlay"></div>
 
-    <!-- Registration Form in Modal -->
     <div class="modal">
       <div class="sales-form-container">
-        <!--Add Members Form-->
         <h1>Add Sales</h1>
+
         <form id="add" method="post" action="Sales_Add.php" class="sales-form" novalidate="novalidate">
-          <!--Member Selection-->
           <div class="input-box">
             <label for="member_id">Member</label>
-            <div class="select-box">
+            <div class="select-box addmember-box">
               <select name="member_id" id="member_id" required>
                 <option value="">Select a member</option>
-                <!-- Populate this with dynamic options based on members in the system -->
+
                 <?php
-                // Loop through the members and populate the options dynamically
+
                 foreach ($members as $member) {
-                    echo '<option value="' . $member['Member_ID'] . '">' . htmlspecialchars($member['Full_Name']) . '</option>';
+                  echo '<option value="' . $member['Member_ID'] . '">' . htmlspecialchars($member['Full_Name']) . '</option>';
                 }
                 ?>
               </select>
@@ -312,11 +449,11 @@ if ($result3->num_rows > 0) {
             <!--Payment Method-->
             <div class="input-box">
               <label for="payment_method">Payment Method</label>
-              <div class="select-box">
+              <div class="select-box payment-box">
                 <select name="payment_method" id="payment_method" required>
                   <option value="">Select payment method</option>
-                  <option value="cash">Cash</option>
-                  <option value="card">Card</option>
+                  <option value="Cash">Cash</option>
+                  <option value="Card">Card</option>
                 </select>
               </div>
 
@@ -326,7 +463,7 @@ if ($result3->num_rows > 0) {
             <!--Staff ID (Optional)-->
             <div class="input-box">
               <label for="staff_id">Processed By (Staff)</label>
-              <div class="select-box">
+              <div class="select-box staff-box">
                 <select name="staff_id" id="staff_id">
                   <option value="">Select staff</option>
                   <!-- Populate this with dynamic options based on employees -->
@@ -360,168 +497,267 @@ if ($result3->num_rows > 0) {
       </div>
     </div>
 
+    <?php
+    if (isset($_GET['success']) && $_GET['success'] === '1') {
+      echo "<script>alert('Sales successfully added!');</script>";
+    }
+    ?>
+
     <div class="edit-modal-overlay"></div>
     <!-- Edit Member Modal -->
 
     <div class="edit-modal">
       <div class="sales-form-container">
-        <header>Edit Sales</header>
-        <form id="add" method="post" action="Sales_Edit.php" class="sales-form" novalidate="novalidate">
+        <h1>Edit Sales</h1>
+        <form id="edit" method="post" action="Sales_Edit.php" class="sales-form" novalidate="novalidate">
           <input type="hidden" name="Sales_ID" id="editSalesID">
-          <!--Full Name-->
+          <!--Member Selection-->
           <div class="input-box">
-            <label>Full Name</label>
-            <input type="text" name="fullname_edit" id="fullname_edit" maxlength="50" pattern="^[a-zA-Z ]+$" placeholder="Example: John Doe" value="" required />
-            <section id="fullname_error" class="error"></section>
-          </div>
-
-          <!--Email Address-->
-          <div class="input-box">
-            <label>Email Address</label>
-            <input type="text" name="email" id="email_edit" pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$" placeholder="Example: name@domain.com" value="" required />
-            <section id="email_error" class="error"></section>
-          </div>
-
-          <!--Merge Column-->
-          <div class="column">
-            <!--Phone Number-->
-            <div class="input-box">
-              <label>Phone Number</label>
-              <input type="tel" name="phonenum" id="phonenum_edit" maxlength="12" pattern="[0-9 ]{8,12}" placeholder="Example: 012 1234567" value="" required />
-              <section id="phonenum_error" class="error"></section>
-            </div>
-
-            <!--Birth Date-->
-            <div class="input-box">
-              <label>Birth Date</label>
-              <input type="text" name="dob" id="dob_edit" placeholder="dd/mm/yyyy" pattern="\d{1,2}\/\d{1,2}\/\d{4}" placeholder="dd/mm/yyyy" value="" required />
-              <section id="dob_error" class="error"></section>
-            </div>
-          </div>
-
-          <!--Gender Box-->
-          <div class="gender-box">
-            <h3>Gender</h3>
-            <div class="gender-option">
-              <!--Male-->
-              <div class="gender">
-                <input type="radio" name="gender" id="check-male_edit" value="male" />
-                <label for="check-male">Male</label>
-              </div>
-
-              <!--Female-->
-              <div class="gender">
-                <input type="radio" name="gender" id="check-female_edit" value="female" />
-                <label for="check-female">Female</label>
-              </div>
-
-              <!--Not to Say-->
-              <div class="gender">
-                <input type="radio" name="gender" id="check-others_edit" value="not-say" />
-                <label for="check-others">Prefer Not To Say</label>
-              </div>
-              <section id="gender_error" class="error"></section>
-            </div>
-          </div>
-
-          <!--Address Column-->
-          <div class="input-box address">
-
-            <!--Street Address-->
-            <label>Street Address</label>
-            <input type="text" name="streetaddress" id="streetaddress_edit" maxlength="50" size="50" pattern="[a-zA-Z ]{1,50}" placeholder="Example: 123 Jalan Sultan" value="" required />
-            <section id="streetaddress_error" class="error"></section>
-
-            <br>
-
-            <!--Country-->
-            <label>Country</label>
-            <div class="select-box">
-              <select name="country" id="country_edit" required>
-                <!--A select box of countries will be dynamically inserted here-->
+            <label for="member_id">Member</label>
+            <div class="select-box editmember-box">
+              <select name="member_edit" id="member_edit" required>
+                <!-- Populate this with dynamic options based on members in the system -->
               </select>
             </div>
-            <section id="country_error" class="error"></section>
-            <div class="column">
-              <!--City-->
-              <div class="input-box">
-                <label>City</label>
-                <input type="text" name="city" id="city_edit" maxlength="50" size="50" pattern="[a-zA-Z ]{1,50}" placeholder="Example: Kuala Lumpur" value="" required />
-                <section id="city_error" class="error"></section>
+
+            <section id="member_edit_error" class="error"></section>
+          </div>
+
+          <div class="column">
+            <!--Payment Method-->
+            <div class="input-box">
+              <label for="payment_method">Payment Method</label>
+              <div class="select-box">
+                <select name="payment_method_edit" id="payment_method_edit" required>
+
+                </select>
               </div>
-              <!--Postcode-->
-              <div class="input-box">
-                <label>Postal Code</label>
-                <input type="text" name="postalcode" id="postalcode_edit" maxlength="5" size="5" pattern="\d{5}" placeholder="Example: 45600" value="" required />
-                <section id="postalcode_error" class="error"></section>
+
+              <section id="payment_error" class="error"></section>
+            </div>
+
+            <!--Staff ID (Optional)-->
+            <div class="input-box">
+              <label for="staff_id">Processed By (Staff)</label>
+              <div class="select-box">
+                <select name="staff_edit" id="staff_edit">
+                  <!-- Populate this with dynamic options based on employees -->
+                </select>
               </div>
+
+              <section id="staff_error" class="error"></section>
             </div>
           </div>
-          <button>Save Changes</button>
+
+          <div class="column">
+            <div class="input-box">
+              <label>Product</label>
+              <div class="select-box">
+                <select name="product_edit" id="product_edit" required>
+                  <!-- Populate this with dynamic options based on products -->
+                </select>
+              </div>
+              <section id="product_error" class="error"></section>
+            </div>
+
+            <div class="input-box">
+              <label>Quantity</label>
+              <input type="number" name="quantity_edit" id="quantity_edit" min="1" placeholder="Enter quantity" required />
+              <section id="quantity_edit_error" class="error"></section>
+            </div>
+          </div>
+          <button class="edit">Save Changes</button>
         </form>
       </div>
     </div>
 
-    <script src="./index.js"></script>
-    <script src="salesform.js"></script>
-    <script src="sales.js"></script>
-
     <?php
-      // Generate product options in PHP
-      $productOptions = '';
-      foreach ($items as $product) {
-          $productOptions .= '<option value="' . $product['Item_ID'] . '">' . htmlspecialchars($product['Name']) . '</option>';
-      }
+    // Generate product options in PHP
+    $productOptions = '';
+    foreach ($items as $product) {
+      $productOptions .= '<option value="' . $product['Item_ID'] . '">' . htmlspecialchars($product['Name']) . '</option>';
+    }
     ?>
+  </div>
 
-    <script>
-      let productCount = 0; // To keep track of the number of products added
+  <script>
+    let productCount = 0; // To keep track of the number of products added
 
-      const productOptions = `<?php echo $productOptions; ?>`;
+    const productOptions = `<?php echo $productOptions; ?>`;
 
-      document.getElementById('add-product-btn').addEventListener('click', function() {
-        productCount++;
+    document.getElementById('add-product-btn').addEventListener('click', function() {
+      productCount++;
 
-        // Create a new product and quantity selection block
-        const productBlock = document.createElement('div');
-        productBlock.classList.add('input-box');
-        productBlock.innerHTML = `
-      <div class="product-item">
-        <div class="column">
-          <div class="input-box">
-            <label for="product_${productCount}">Product</label>
-            <div class="select-box">
-              <select name="inventory_id[]" id="product_${productCount}" required>
-          
-                <option value="">Select a product</option>
-                ${productOptions}
-              </select>
-            </div>
+      // Create a new product and quantity selection block
+      const productBlock = document.createElement('div');
+      productBlock.classList.add('input-box');
+      productBlock.innerHTML = `
+    <div class="product-item">
+      <div class="column">
+        <div class="input-box">
+          <label for="product_${productCount}">Product</label>
+          <div class="select-box product-box">
+            <select name="inventory_id[]" id="product_${productCount}" required>
+        
+              <option value="">Select a product</option>
+              ${productOptions}
+            </select>
           </div>
-
-          <div class="input-box">
-            <label for="quantity_${productCount}">Quantity</label>
-            <input type="number" name="quantity[]" id="quantity_${productCount}" min="1" placeholder="Enter quantity" required />
-          </div>
+          <section id="product_${productCount}_error" class="error"></section>
         </div>
-        <button type="button" class="remove-product-btn">Remove</button>
+
+        <div class="input-box">
+          <label for="quantity_${productCount}">Quantity</label>
+          <input type="number" name="quantity[]" id="quantity_${productCount}" min="1" placeholder="Enter quantity" required />
+          <section id="quantity_${productCount}_error" class="error"></section>
+        </div>
       </div>
+      <button type="button" class="remove-product-btn">Remove</button>
+    </div>
     `;
 
-        // Append the new product block to the product list section
-        document.getElementById('product-list').appendChild(productBlock);
+      // Append the new product block to the product list section
+      document.getElementById('product-list').appendChild(productBlock);
 
-        // Add event listener to the remove button
-        productBlock.querySelector('.remove-product-btn').addEventListener('click', function() {
-          productBlock.remove();
-        });
+      // Add event listener to the remove button
+      productBlock.querySelector('.remove-product-btn').addEventListener('click', function() {
+        productBlock.remove();
+        productCount--;
       });
-    </script>
+    });
+  </script>
+  <script>
+    // JavaScript function to send AJAX request to PHP
+    function requestSalesInfo(record) {
+      // Make a GET request to the PHP script using fetch()
+      fetch('request_sales.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json', // Specify plain text format
+          },
+          body: record.getAttribute('data-sales-id')
+        })
+        .then(response => response.json()) // Expect a json response
+        .then(data => {
+          if (data.error) {
+            console.log("error"); // Debugging
+          } else {
+            const excludedMember = data.Request_Data.Member_Name;
+
+            var selectBox_members = "";
+            selectBox_members += "<option value=\"" + data.Request_Data.Member_ID + "\">" + excludedMember + "</option>";
+            data.Members_Table.forEach(member => {
+              if (member.Full_Name !== excludedMember) {
+                selectBox_members += "<option value=\"" + member.Member_ID + "\">" + member.Full_Name + "</option>";
+              }
+            });
+
+            const excludedPayment = data.Request_Data.Payment_Method;
+
+            var selectBox_payment = "";
+            selectBox_payment += "<option value=\"" + excludedPayment + "\">" + excludedPayment + "</option>";
+            if (excludedPayment == "Cash") {
+              selectBox_payment += "<option value=Card>Card</option>";
+            } else {
+              selectBox_payment += "<option value=Cash>Cash</option>";
+            }
+
+            const excludedStaff = data.Request_Data.Staff_ID;
+            const staffs = [
+              1,
+              2,
+              3,
+              4,
+              5
+            ];
+
+            var selectBox_staff = "";
+            selectBox_staff += "<option value=\"" + excludedStaff + "\">" + excludedStaff + "</option>";
+            for (const staff of staffs) {
+              if (staff != excludedStaff) {
+                selectBox_staff += "<option value=\"" + staff + "\">" + staff + "</option>";
+              }
+            }
+
+            const excludedItem = data.Request_Data.Item_Name;
+
+            var selectBox_inventory = "";
+            selectBox_inventory += "<option value=\"" + data.Request_Data.Item_ID + "\">" + excludedItem + "</option>";
+            data.Inventory_Table.forEach(item => {
+              if (item.Name !== excludedItem) {
+                selectBox_inventory += "<option value=\"" + item.Item_ID + "\">" + item.Name + "</option>";
+              }
+            });
+
+            document.getElementById('member_edit').innerHTML = selectBox_members;
+            document.getElementById('payment_method_edit').innerHTML = selectBox_payment;
+            document.getElementById('staff_edit').innerHTML = selectBox_staff;
+            document.getElementById('product_edit').innerHTML = selectBox_inventory;
+            document.getElementById('quantity_edit').value = data.Request_Data.Quantity;
+
+            previousSalesItem(data.Request_Data.Item_ID, data.Request_Data.Quantity);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    }
+  </script>
+  <script>
+    function previousSalesItem(itemID, quantity) {
+      sessionStorage.setItem('previousItemID', itemID);
+      sessionStorage.setItem('previousQuantity', quantity);
+    }
+
+    const form = document.getElementById('edit');
+
+    // Add a 'submit' event listener
+    form.addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      if (validateQuantity(form)) {
+        // Set current item ID and quantity in session storage
+        sessionStorage.setItem('currentItemID', document.getElementById('product_edit').value);
+        sessionStorage.setItem('currentQuantity', document.getElementById('quantity_edit').value);
+
+        form.submit(); // Submit the form only if validation passes
+      }
+    });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('edit') === 'success') {
+      const data = {
+        Previous_Item_ID: sessionStorage.getItem('previousItemID'),
+        Previous_Quantity: sessionStorage.getItem('previousQuantity'),
+        Current_Item_ID: sessionStorage.getItem('currentItemID'),
+        Current_Quantity: sessionStorage.getItem('currentQuantity')
+      };
+
+      fetch('update_inventory.php', {
+          method: 'POST', // Use POST method
+          headers: {
+            'Content-Type': 'application/json', // Specify the content type
+          },
+          body: JSON.stringify(data) // Convert data to JSON string
+        })
+        .then(response => response.text()) // Parse the JSON response
+        .then(data => {
+          console.log('Success:', data); // Handle success
+        })
+        .catch((error) => {
+          console.error('Error:', error); // Handle error
+        });
+
+      urlParams.delete('edit');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  </script>
+  <script src="./index.js"></script>
+  <script src="salesform.js"></script>
+  <script src="sales.js"></script>
+
   </div>
 
-  <script src="./index.js"></script>
-  <script src="sales.js"></script>
-  </div>
 </body>
 
 </html>
