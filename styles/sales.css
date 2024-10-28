@@ -1,0 +1,80 @@
+.sales-container .add-sales {
+    background: transparent;
+    border: 2px dashed var(--color-primary);
+    color: var(--color-primary);
+    display: flex;
+    justify-content: center;
+    width: 50%;
+    height: 4rem;
+    border-radius: var(--border-radius-3);
+}
+
+main .sales-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+/* Adjusting the button width */
+.sales-container .add-sales {
+    width: 20%;
+}
+
+.sales-container .add-sales:hover {
+    background: var(--color-primary);
+    color: white;
+}
+
+.sales-container .add-sales div {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.sales-container .add-sales h3 {
+    font-weight: 600;
+}
+
+/* START Members Detail TABLE */
+main .sales-detail {
+    margin-top: 2rem;
+
+}
+
+main .sales-detail h2 {
+    margin-bottom: 0.8rem;
+}
+
+main .sales-detail table {
+    background: var(--color-white);
+    width: 100%;
+    border-radius: var(--card-border-radius);
+    padding: var(--card-padding);
+    text-align: center;
+    box-shadow: var(--box-shadow);
+    transition: all 300ms ease;
+}
+
+main .sales-detail table:hover {
+    cursor: pointer;
+    box-shadow: none;
+}
+
+main table tbody td {
+    height: 2.8rem;
+    border-bottom: 1px solid var(--color-light);
+    color: var(--color-dark-variant);
+}
+
+main table tbody tr:last-child td {
+    border: none;
+}
+
+main .sales-detail a {
+    text-align: center;
+    display: block;
+    margin: 1rem auto;
+    color: var(--color-primary);
+}
+/* END RECENT MEMBER */
