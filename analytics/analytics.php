@@ -6,276 +6,479 @@ $conn = new mysqli($host, $user, $pwd, $sql_db);
 
 // Check the connection
 if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
+    die("Connection failed: " . $conn->connect_error);
 }
 
-// Fetch Member Purchases
-function getMemberPurchases($conn) {
-    // Prepare SQL statement to fetch items
-    $sql = "SELECT sales.Sales_ID, members.Full_Name AS Member_Name, inventory.Name AS Item_Name, sales.Quantity, 
-        sales.Price_per_Unit, sales.Total_Price, sales.Sale_Date, sales.Payment_Method, sales.Staff_ID 
-        FROM sales 
-        JOIN members ON sales.Member_ID = members.Member_ID 
-        JOIN inventory ON sales.Item_ID = inventory.Item_ID";
-    $result = $conn->query($sql);
+$period = $_GET['period'] ?? 'daily';
 
-    // Fetch all items as an array
-    $purchases = [];
-    while ($row = $result->fetch_assoc()) {
-        $purchases[] = [
-            'item_name' => $row['Item_Name'],
-            'quantity' => $row['Quantity']
-        ];
+if (isset($_GET['period'])) {
+    //$period = $_GET['period'];
+    $specificDate = $_GET['specific_date'] ?? null; // Get specific date if provided
+    $specificMonth = $_GET['specific_month'] ?? null; // Get specific month if provided
+
+    $categoryQuantities = getCategoryQuantities($conn, $period, $specificDate, $specificMonth);
+
+    // Call the function to get top frequent items based on the selected period
+    $topItems = getTopFrequentItemsByPeriod($conn, $period, $specificDate, $specificMonth);
+
+    echo json_encode([
+        'categoryQuantities' => $categoryQuantities, // For pie chart
+        'topItems' => $topItems // For bar chart
+    ]);
+    exit;
+}
+
+function getCategoryQuantities($conn, $period, $specificDate = null, $specificMonth = null)
+{
+    $dateCondition = '';
+
+    // Set the date condition based on the selected period
+    if ($period === 'daily') {
+        $dateCondition = "DATE(sales.Sale_Date) = CURDATE()";
+    } elseif ($period === 'weekly') {
+        $dateCondition = "YEARWEEK(sales.Sale_Date, 1) = YEARWEEK(CURDATE(), 1)";
+    } elseif ($period === 'monthly') {
+        $dateCondition = "MONTH(sales.Sale_Date) = MONTH(CURDATE()) AND YEAR(sales.Sale_Date) = YEAR(CURDATE())";
+    } elseif ($period === 'specific_date' && $specificDate) {
+        $dateCondition = "DATE(sales.Sale_Date) = '$specificDate'";
+    } elseif ($period === 'specific_month' && $specificMonth) {
+        $dateCondition = "MONTH(sales.Sale_Date) = MONTH('$specificMonth-01') AND YEAR(sales.Sale_Date) = YEAR('$specificMonth-01')";
     }
-    return $purchases;
-}
 
-// Frequent Item Analysis Based on Quantity
-function getFrequentItems($purchases) {
-    $frequency = [];
-    foreach ($purchases as $purchase) {
-        $item = $purchase['item_name'];
-        $quantity = $purchase['quantity'];
-        if (isset($frequency[$item])) {
-            $frequency[$item] += $quantity; // Add the quantity to the existing total
-        } else {
-            $frequency[$item] = $quantity; // Initialize with the current quantity
-        }
-    }
-    arsort($frequency); // Sort items by total quantity in descending order
-    return array_slice($frequency, 0, 10, true); // Return top 10 items based on quantity
-}
-
-function getCategoryQuantities($conn) {
-    $sql = "SELECT inventory.Category AS Item_Category, SUM(sales.Quantity) AS Total_Quantity
+    // SQL query with the date condition
+    $sql1 = "SELECT inventory.Category AS Item_Category, SUM(sales.Quantity) AS Total_Quantity
             FROM sales 
             JOIN inventory ON sales.Item_ID = inventory.Item_ID
+            WHERE $dateCondition
             GROUP BY inventory.Category";
-    $result = $conn->query($sql);
+    $result1 = $conn->query($sql1);
 
     // Fetch and store category quantities in an associative array
     $categoryData = [];
-    while ($row = $result->fetch_assoc()) {
+    while ($row = $result1->fetch_assoc()) {
         $categoryData[$row['Item_Category']] = $row['Total_Quantity'];
     }
-
-    //echo "<pre>";
-    //print_r($categoryData);
-    //echo "</pre>";
 
     return $categoryData;
 }
 
-// Fetch the period from GET parameters
-$period = $_GET['period'] ?? 'daily'; // Default to 'daily' if not set
-
-function getSalesByPeriod($conn, $period) {
-    $dateFormat = '';
+function getTopFrequentItemsByPeriod($conn, $period, $specificDate = null, $specificMonth = null)
+{
+    // Determine date condition based on period
+    $dateCondition = '';
     switch ($period) {
         case 'daily':
-            $dateFormat = 'DATE(Sale_Date)'; // Group by day
+            $dateCondition = "DATE(sales.Sale_Date) = CURDATE()";
             break;
         case 'weekly':
-            $dateFormat = 'YEAR(Sale_Date), WEEK(Sale_Date)'; // Group by week
+            $dateCondition = "YEARWEEK(sales.Sale_Date, 1) = YEARWEEK(CURDATE(), 1)";
             break;
         case 'monthly':
-            $dateFormat = 'YEAR(Sale_Date), MONTH(Sale_Date)'; // Group by month
+            $dateCondition = "MONTH(sales.Sale_Date) = MONTH(CURDATE()) AND YEAR(sales.Sale_Date) = YEAR(CURDATE())";
+            break;
+        case 'specific_date':
+            if ($specificDate) {
+                $dateCondition = "DATE(sales.Sale_Date) = '$specificDate'";
+            }
+            break;
+        case 'specific_month':
+            if ($specificMonth) {
+                $year = substr($specificMonth, 0, 4);
+                $month = substr($specificMonth, 5, 2);
+                $dateCondition = "YEAR(sales.Sale_Date) = $year AND MONTH(sales.Sale_Date) = $month";
+            }
             break;
         default:
-            $dateFormat = 'DATE(Sale_Date)'; // Default to daily
+            return []; // Return empty array if period is not specified
     }
 
-    $sql = "SELECT $dateFormat AS Sale_Period, SUM(sales.Quantity) AS Total_Quantity
-            FROM sales 
-            GROUP BY Sale_Period
-            ORDER BY Sale_Period";
-    
-    $result = $conn->query($sql);
+    // SQL query to fetch top 10 items by frequency in the specified period
+    $sql2 = "SELECT inventory.Name AS item_name, SUM(sales.Quantity) AS total_quantity
+            FROM sales
+            JOIN inventory ON sales.Item_ID = inventory.Item_ID
+            WHERE $dateCondition
+            GROUP BY sales.Item_ID
+            ORDER BY total_quantity DESC
+            LIMIT 10";
 
-    $salesData = [];
-    while ($row = $result->fetch_assoc()) {
-        // Format Sale_Period for display based on selected period
-        if ($period === 'weekly') {
-            $salesData["Week " . $row['Sale_Period']] = $row['Total_Quantity']; // Format as "Week 2022-01"
-        } elseif ($period === 'monthly') {
-            $salesData[date("F Y", mktime(0, 0, 0, $row['Sale_Period'][1], 1, $row['Sale_Period'][0]))] = $row['Total_Quantity']; // Format as "January 2022"
-        } else {
-            $salesData[$row['Sale_Period']] = $row['Total_Quantity']; // Just use the date
-        }
+    $result2 = $conn->query($sql2);
+
+    // Fetch the results as an array
+    $topItems = [];
+    while ($row = $result2->fetch_assoc()) {
+        $topItems[] = [
+            'item_name' => $row['item_name'],
+            'total_quantity' => $row['total_quantity']
+        ];
     }
-
-    return $salesData;
+    return $topItems;
 }
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-
-// Step 4: Perform Analysis
-$purchases = getMemberPurchases($conn);
-$frequentItems = getFrequentItems($purchases);
-
-$categoryQuantities = getCategoryQuantities($conn);
-
-$salesData = getSalesByPeriod($conn, $period);
-echo json_encode($salesData);
+// Notification count
+$unread = "SELECT message, notification_type FROM notifications WHERE is_read = 0";
+$notiCount = mysqli_query($conn, $unread);
+$query2 = "SELECT noti, created_at, notification_type FROM notifications WHERE is_read = 0 ORDER BY created_at DESC LIMIT 3";
+$recentNoti = mysqli_query($conn, $query2);
 
 $conn->close(); // Close the database connection
 ?>
 
-<style>
-    /* Container for the chart to control its size */
-    .chart-container {
-        width: 800px;
-        height: 400px;
-        position: relative;
-    }
-</style>
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <title>Frequent Item Analysis</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Goto Gro MRMS</title>
+
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
+    <link rel="stylesheet" href="../styles/style.css" />
+    <link rel="stylesheet" href="../styles/analytics.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
-    <!-- Step 5: Display Frequent Items in a Table -->
-    <h3>Top 10 Most Frequent Items Bought</h3>
-    <table border="1" cellpadding="8" cellspacing="0">
-        <tr>
-            <th>Item</th>
-            <th>Quantity</th>
-        </tr>
-        <?php foreach ($frequentItems as $item => $quantity): ?>
-            <tr>
-                <td><?php echo htmlspecialchars($item); ?></td>
-                <td><?php echo htmlspecialchars($quantity); ?></td>
-            </tr>
-        <?php endforeach; ?>
-    </table>
+    <div class="container">
+        <aside>
+            <div class="top">
+                <div class="logo">
+                    <img src="../images/logo.png" alt="Logo" />
+                    <h2>Goto<span class="danger">Gro</span></h2>
+                </div>
+                <div class="close" id="close-btn">
+                    <span class="material-icons-sharp"> close </span>
+                </div>
+            </div>
 
-    <!-- Step 6: Display Frequent Items in a Bar Chart -->
-    <div class="chart-container">
-        <canvas id="frequentItemsChart"></canvas>
-    </div>
-    <script>
-        const ctx1 = document.getElementById('frequentItemsChart').getContext('2d');
-        const frequentItemsChart = new Chart(ctx1, {
-            type: 'bar',
-            data: {
-                labels: <?php echo json_encode(array_keys($frequentItems)); ?>,
-                datasets: [{
-                    label: 'Total Quantity Bought',
-                    data: <?php echo json_encode(array_values($frequentItems)); ?>,
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true, // Enable responsiveness
-                maintainAspectRatio: false, // Allow custom aspect ratio
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
-        });
-    </script>
+            <div class="sidebar">
+                <a href="../index/index.php">
+                    <span class="material-icons-sharp"> dashboard </span>
+                    <h3>Dashboard</h3>
+                </a>
+                <a href="../members/members.php">
+                    <span class="material-icons-sharp"> person_outline </span>
+                    <h3>Members</h3>
+                </a>
+                <a href="../inventory/inventory.php">
+                    <span class="material-icons-sharp"> inventory_2 </span>
+                    <h3>Inventory </h3>
+                </a>
+                <a href="../sales/sales.php">
+                    <span class="material-icons-sharp"> receipt_long </span>
+                    <h3>Sales</h3>
+                </a>
+                <a href="../notification/notification.php">
+                    <span class="material-icons-sharp"> notifications </span>
+                    <h3>Notifications</h3>
+                    <?php if (mysqli_num_rows($notiCount) > 0): ?>
+                        <span class="message-count">
+                            <?php echo mysqli_num_rows($notiCount); ?>
+                        </span>
+                    <?php endif; ?>
+                </a>
+                <a href="../analytics/analytics.php" class="active">
+                    <span class="material-icons-sharp"> insights </span>
+                    <h3>Analytics</h3>
+                </a>
+                <a href="#">
+                    <span class="material-icons-sharp"> feedback </span>
+                    <h3>Feedback</h3>
+                </a>
+                <a href="#">
+                    <span class="material-icons-sharp"> logout </span>
+                    <h3>Logout</h3>
+                </a>
+                <!----- EXTRA ----->
+                <a href="#">
+                    <span class="material-icons-sharp"> report_gmailerrorred </span>
+                    <h3>Reports</h3>
+                </a>
+                <a href="#">
+                    <span class="material-icons-sharp"> settings </span>
+                    <h3>Settings</h3>
+                </a>
+            </div>
+        </aside>
 
-    <!-- Step 3: Display Category Data in a Pie Chart -->
-    <h3>Most Popular Item Categories (Based on Total Quantity)</h3>
-    <div class="chart-container">
-        <canvas id="categoryPieChart"></canvas>
-    </div>
-    <script>
-        const ctx2 = document.getElementById('categoryPieChart').getContext('2d');
-        const categoryPieChart = new Chart(ctx2, {
-            type: 'pie',
-            data: {
-                labels: <?php echo json_encode(array_keys($categoryQuantities)); ?>,
-                datasets: [{
-                    label: 'Total Quantity by Category',
-                    data: <?php echo json_encode(array_values($categoryQuantities)); ?>,
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.2)',
-                        'rgba(54, 162, 235, 0.2)',
-                        'rgba(255, 206, 86, 0.2)',
-                        'rgba(75, 192, 192, 0.2)',
-                        'rgba(153, 102, 255, 0.2)',
-                        'rgba(255, 159, 64, 0.2)'
-                    ],
-                    borderColor: [
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(153, 102, 255, 1)',
-                        'rgba(255, 159, 64, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                }
-            }
-        });
-    </script>
 
-    <h3>Select Sales Period</h3>
-    <select id="salesPeriod">
-        <option value="daily">Daily</option>
-        <option value="weekly">Weekly</option>
-        <option value="monthly">Monthly</option>
-    </select>
-    <button onclick="updateChart()">Update Chart</button>
 
-    <h3>Sales Quantity by Period</h3>
-    <div class="chart-container">
-        <canvas id="salesChart"></canvas>
-    </div>
+        <main>
+            <h1>Analytics</h1>
 
-    <script>
-        let salesChart; // Declare the variable to hold the chart instance
+            <div class="insights">
+                <div class="filter">
+                    <h3>Select Sales Period</h3>
+                    <select id="salesPeriod" onchange="toggleInputFields()">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="specific_date">Specific Date</option>
+                        <option value="specific_month">Specific Month</option>
+                    </select>
+                    <input type="date" id="specificDate" style="display: none;" placeholder="Select Date">
+                    <input type="month" id="specificMonth" style="display: none;" placeholder="Select Month">
+                    <button onclick="updateChart(); updateCategoryChart();">Update Chart</button>
 
-        function updateChart() {
-            const period = document.getElementById('salesPeriod').value;
+                </div>
+                <div class="pie-chart">
+                    <div class="middle">
+                        <h3>Most Popular Item Categories </h3>
+                        <div class="pie-chart-container">
+                            <canvas id="categoryPieChart"></canvas>
+                        </div>
+                    </div>
+                    <h3 id="selectedPeriod1"></h3>
+                    <h4>(Based on Total Quantity)</h4>
+                </div>
+            </div>
 
-            fetch(`../sales/sales.php?period=${period}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (salesChart) {
-                        salesChart.destroy(); // Destroy the previous chart instance if it exists
-                    }
-                    const ctx3 = document.getElementById('salesChart').getContext('2d');
-                    salesChart = new Chart(ctx3, {
-                        type: 'bar',
-                        data: {
-                            labels: Object.keys(data), // X-axis labels based on period
-                            datasets: [{
-                                label: 'Total Quantity Sold',
-                                data: Object.values(data), // Y-axis data based on quantity
-                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                                borderColor: 'rgba(75, 192, 192, 1)',
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            scales: {
-                                y: { beginAtZero: true }
-                            }
+
+            <div class="graph">
+            <h3>Item Sales Quantity by Period</h3>
+            <h3 id="selectedPeriod2"></h3>
+                    <div class="bar-chart-container">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+            </div>
+        </main>
+
+        <div class="right">
+            <div class="top">
+                <button id="menu-btn">
+                    <span class="material-icons-sharp"> menu </span>
+                </button>
+                <div class="profile">
+                    <div class="info">
+                        <p>Hey, <b>Meow</b></p>
+                        <small class="text-muted">Admin</small>
+                    </div>
+                    <div class="profile-photo">
+                        <img src="../images/profile-1.jpg" alt="Profile Picture" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Side Notification -->
+            <div class="notification-section">
+
+                <h2>Notifications
+                    <?php if (mysqli_num_rows($notiCount) > 0): ?>
+                        <span class="message-count">
+                            <?php echo mysqli_num_rows($notiCount); ?>
+                        </span>
+                    <?php endif; ?>
+                </h2>
+
+                <a href="../notification/notification.php">
+                    <?php
+                    if ($recentNoti && mysqli_num_rows($recentNoti) > 0) {
+                        // Fetch notifications from the result set
+                        while ($row = mysqli_fetch_assoc($recentNoti)) {
+                            $noti = $row['noti'];
+                            $date = $row['created_at'];
+                            $type = $row['notification_type']; // e.g., 'success', 'error', 'warning'
+                    ?>
+                            <div class="item <?php echo $type; ?>">
+                                <div class="icon">
+                                    <span class="material-icons-sharp"><?php echo $type === 'alert' ? 'error' : ($type === 'warning' ? 'warning' : 'info'); ?></span>
+                                </div>
+                                <div class="message-content">
+                                    <b><?php echo $noti; ?></b>
+                                    <p><?php echo $date; ?></p> <!-- Date will appear on the next line -->
+                                </div>
+                            </div>
+                    <?php
                         }
-                    });
-                })
-                .catch(error => console.error('Error fetching sales data:', error)); // Handle any errors
-        }
-    </script>
+                    } else {
+                        // If no notifications are found
+                        echo '<div class="item info"><div class="icon"><span class="material-icons-sharp">info</span></div>No new notifications.</div>';
+                    }
+                    ?>
+                </a>
+            </div>
+        </div>
+
+        <!-- Display Category Data in a Pie Chart -->
+        <script>
+            let categoryPieChart;
+
+            function toggleInputFields() {
+                const period = document.getElementById('salesPeriod').value;
+                document.getElementById('specificDate').style.display = period == 'specific_date' ? 'block' : 'none';
+                document.getElementById('specificMonth').style.display = period == 'specific_month' ? 'block' : 'none';
+            }
+
+            // Function to update the pie chart for category quantities
+            function updateCategoryChart() {
+                const period = document.getElementById('salesPeriod').value; // Get selected period
+                let url = `analytics.php?period=${period}`; // Base URL for fetching data
+                let selectedPeriodText = '';
+                let specificDate = null;
+                let specificMonth = null;
+
+                // Add specific date or month to URL if applicable
+                if (period === 'specific_date') {
+                    specificDate = document.getElementById('specificDate').value; // Get specific date
+                    url += `&specific_date=${specificDate}`; // Append to URL
+                    selectedPeriodText = `Sales on ${specificDate}`; // Update display text
+                } else if (period === 'specific_month') {
+                    specificMonth = document.getElementById('specificMonth').value; // Get specific month
+                    url += `&specific_month=${specificMonth}`; // Append to URL
+                    selectedPeriodText = `Sales in ${specificMonth}`; // Update display text
+                } else {
+                    selectedPeriodText = `Sales - ${period.charAt(0).toUpperCase() + period.slice(1)}`; // Update display text for daily or weekly
+                }
+                
+                // Set the selected period display text
+                document.getElementById('selectedPeriod1').innerText = selectedPeriodText;
+
+                // Fetch data for the pie chart
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        const ctx1 = document.getElementById('categoryPieChart').getContext('2d');
+
+                        if (categoryPieChart) {
+                            categoryPieChart.destroy();
+                        }
+
+                        // Create a new chart instance
+                        categoryPieChart = new Chart(ctx1, {
+                            type: 'pie', // Chart type
+                            data: {
+                                labels: Object.keys(data.categoryQuantities), // X-axis labels: categories
+                                datasets: [{
+                                    label: 'Total Quantity by Category',
+                                    data: Object.values(data.categoryQuantities), // Y-axis data: quantities
+                                    backgroundColor: [
+                                        'rgba(255, 99, 132, 0.2)',
+                                        'rgba(54, 162, 235, 0.2)',
+                                        'rgba(255, 206, 86, 0.2)',
+                                        'rgba(75, 192, 192, 0.2)',
+                                        'rgba(153, 102, 255, 0.2)',
+                                        'rgba(255, 159, 64, 0.2)'
+                                    ],
+                                    borderColor: [
+                                        'rgba(255, 99, 132, 1)',
+                                        'rgba(54, 162, 235, 1)',
+                                        'rgba(255, 206, 86, 1)',
+                                        'rgba(75, 192, 192, 1)',
+                                        'rgba(153, 102, 255, 1)',
+                                        'rgba(255, 159, 64, 1)'
+                                    ],
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: {
+                                        display: true // Show the legend
+                                    },
+                                }
+                            }
+                        });
+                    })
+                    .catch(error => console.error('Error fetching category data:', error)); // Handle any errors
+            }
+
+            document.getElementById('salesPeriod').addEventListener('change', updateCategoryChart);
+
+            updateCategoryChart(); // Call it on page load
+        </script>
+
+
+        <script>
+            let salesChart; // Declare the variable to hold the chart instance
+
+            function toggleInputFields() {
+                const period = document.getElementById('salesPeriod').value;
+                document.getElementById('specificDate').style.display = period == 'specific_date' ? 'block' : 'none';
+                document.getElementById('specificMonth').style.display = period == 'specific_month' ? 'block' : 'none';
+            }
+
+            function updateChart() {
+                const period = document.getElementById('salesPeriod').value; // Get selected period
+                let url = `analytics.php?period=${period}`; // Base URL for fetching data
+                let selectedPeriodText = '';
+                let specificDate = null;
+                let specificMonth = null;
+
+                // Add specific date or month to URL if applicable
+                if (period === 'specific_date') {
+                    specificDate = document.getElementById('specificDate').value; // Get specific date
+                    url += `&specific_date=${specificDate}`; // Append to URL
+                    selectedPeriodText = `Sales on ${specificDate}`; // Update display text
+                } else if (period === 'specific_month') {
+                    specificMonth = document.getElementById('specificMonth').value; // Get specific month
+                    url += `&specific_month=${specificMonth}`; // Append to URL
+                    selectedPeriodText = `Sales in ${specificMonth}`; // Update display text
+                } else {
+                    selectedPeriodText = `Sales - ${period.charAt(0).toUpperCase() + period.slice(1)}`; // Format period text
+                }
+
+                // Set the selected period display text
+                document.getElementById('selectedPeriod2').innerText = selectedPeriodText;
+
+                // Fetch data from the PHP script
+                fetch(url)
+                    .then(response => response.json()) // Parse JSON response
+                    .then(data => {
+                        if (salesChart) {
+                            salesChart.destroy(); // Destroy previous chart instance if it exists
+                        }
+
+                        // Prepare data for the bar chart
+                        const itemNames = data.topItems.map(item => item.item_name); // Get item names for X-axis
+                        const quantities = data.topItems.map(item => item.total_quantity); // Get quantities for Y-axis
+
+                        // Create a new chart instance
+                        const ctx2 = document.getElementById('salesChart').getContext('2d');
+
+                        if (salesChart) {
+                            salesChart.destroy();
+                        }
+
+                        salesChart = new Chart(ctx2, {
+                            type: 'bar', // Chart type
+                            data: {
+                                labels: itemNames, // X-axis labels: item names
+                                datasets: [{
+                                    label: 'Quantity Sold', // Dataset label
+                                    data: quantities, // Y-axis data: quantities sold
+                                    backgroundColor: 'rgba(75, 192, 192, 0.2)', // Bar color
+                                    borderColor: 'rgba(75, 192, 192, 1)', // Bar border color
+                                    borderWidth: 1 // Bar border width
+                                }]
+                            },
+                            options: {
+                                responsive: true, // Responsive design
+                                maintainAspectRatio: false, // Maintain aspect ratio
+                                scales: {
+                                    y: {
+                                        beginAtZero: true, // Start Y-axis at zero
+                                        title: {
+                                            display: true,
+                                            text: 'Quantity' // Y-axis title
+                                        }
+                                    },
+                                    x: {
+                                        title: {
+                                            display: true,
+                                            text: 'Items' // X-axis title
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    })
+                    .catch(error => console.error('Error fetching sales data:', error)); // Handle any errors
+            }
+
+            document.getElementById('salesPeriod').addEventListener('change', updateChart);
+
+            updateChart();
+        </script>
 </body>
 </html>

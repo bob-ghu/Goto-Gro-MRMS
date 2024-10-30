@@ -101,7 +101,7 @@ $result2 = mysqli_query($conn, $query2);
                     <?php endif; ?>
                 </a>
 
-                <a href="#">
+                <a href="../analytics/analytics.php">
                     <span class="material-icons-sharp"> insights </span>
                     <h3>Analytics</h3>
                 </a>
@@ -447,8 +447,9 @@ $result2 = mysqli_query($conn, $query2);
                     </div>
 
                     <div class="input-box">
-                        <label>Category</label>
+                    <label>Category</label>
                         <div class="addcategory-box">
+                        
                         <input list="category" id="category_input" name="category_input" placeholder="Enter or Select Category" value="" autocomplete="off" required >
                             <datalist name="category" id="category" required>
                                 <?php

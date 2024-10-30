@@ -193,7 +193,7 @@ $recentNoti = mysqli_query($conn, $query2);
       </div>
 
       <div class="sales-container">
-        <!--Add Members Form-->
+
         <div class="sales-detail">
           <div class="sales-detail-header">
             <h2>Sales' Detail</h2>
@@ -719,7 +719,6 @@ $recentNoti = mysqli_query($conn, $query2);
   <script src="../index/index.js"></script>
   <script src="./salesform.js"></script>
   <script src="./sales.js"></script>
-  <script src="./salestable.js"></script>
 
   </div>
 </body>

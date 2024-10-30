@@ -84,7 +84,7 @@ $salesResult = $conn->query($salesQuery);
             </span>
           <?php endif; ?>
         </a>
-        <a href="#">
+        <a href="../analytics/analytics.php">
           <span class="material-icons-sharp"> insights </span>
           <h3>Analytics</h3>
         </a>

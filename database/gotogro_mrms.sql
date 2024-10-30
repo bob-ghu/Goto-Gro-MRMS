@@ -70,7 +70,7 @@ VALUES
 ('Alicia Thompson', 'alicia.thompson@example.com', '5553216540', '01/12/1990', 'Female', '789 Cedar St', 'USA', 'Texas', 'Dallas', '80201', 'active'),
 ('Zaw Win', 'zaw.win@example.mm', '0995432109', '11/12/1997', 'Male', '123 Bago Rd', 'Myanmar', 'Yangon Region', 'Yangon', '80000', 'active'),
 ('Chloe Chen', 'chloe.chen@example.cn', '13843210987', '18/12/1995', 'Female', '456 Xian Rd', 'China', 'Beijing Municipality', 'Beijing', '71000', 'active'),
-('Rachel Stewart', 'rachel.stewart@example.ca', '6047654321', '19/11/1992', 'Female', '789 West St', 'Canada', 'Ontario', 'Toronto', '92217', 'active');
+('Rachel Stewart', 'rachel.stewart@example.com', '6047654321', '19/11/1992', 'Female', '789 West St', 'Canada', 'Ontario', 'Toronto', '92217', 'active');
 
 CREATE TABLE IF NOT EXISTS inventory (
     Item_ID INT(5) NOT NULL AUTO_INCREMENT PRIMARY KEY,
