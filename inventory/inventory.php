@@ -12,7 +12,7 @@ if ($conn->connect_error) {
 }
 
 // Pagination setup
-$limit = 8;
+$limit = 7;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1; // Get current page or set default to 1
 $offset = ($page - 1) * $limit;
 
@@ -39,6 +39,19 @@ $unread = "SELECT message, notification_type FROM notifications WHERE is_read = 
 $notiCount = mysqli_query($conn, $unread);
 $query2 = "SELECT noti, created_at, notification_type FROM notifications WHERE is_read = 0 ORDER BY created_at DESC LIMIT 3";
 $result2 = mysqli_query($conn, $query2);
+
+$category_count_query = "SELECT Category, COUNT(*) as count FROM inventory GROUP BY Category";
+$category_count_result = $conn->query($category_count_query);
+
+$categories = [];
+$counts = [];
+
+if ($category_count_result->num_rows > 0) {
+    while ($row = $category_count_result->fetch_assoc()) {
+        $categories[] = $row['Category'];
+        $counts[] = (int)$row['count'];
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -101,12 +114,12 @@ $result2 = mysqli_query($conn, $query2);
                     <?php endif; ?>
                 </a>
 
-                <a href="#">
+                <a href="../analytics/analytics.php">
                     <span class="material-icons-sharp"> insights </span>
                     <h3>Analytics</h3>
                 </a>
 
-                <a href="#">
+                <a href="../feedback/feedback.php">
                     <span class="material-icons-sharp"> feedback </span>
                     <h3>Feedback</h3>
                 </a>
@@ -133,68 +146,61 @@ $result2 = mysqli_query($conn, $query2);
             <h1>Inventory</h1>
 
             <div class="insights">
-                <!----- Start Tab 1 ----->
-                <div class="sales">
-                    <span class="material-icons-sharp"> analytics </span>
+                <!----- Start Total Inventory Tab ----->
+                <div class="total-inventory">
+                    <span class="material-icons-sharp"> inventory_2 </span>
                     <div class="middle">
                         <div class="left">
-                            <h3>Total Sales</h3>
-                            <h1>$25,024</h1>
-                        </div>
-                        <div class="progress">
-                            <svg>
-                                <circle cx="38" cy="38" r="36"></circle>
-                            </svg>
-                            <div class="number">
-                                <p>81%</p>
-                            </div>
+                            <h3>Total Inventory</h3>
+                            <h1><?php echo $total_inventory; ?></h1>
                         </div>
                     </div>
-                    <small class="text-muted"> Last 24 hours </small>
+                    <small class="text-muted"> Total number of items in inventory </small>
                 </div>
-                <!----- End Tab 1 ----->
+                <!----- End Total Inventory Tab ----->
 
-                <!----- Start Tab 2 ----->
-                <div class="expenses">
-                    <span class="material-icons-sharp"> bar_chart </span>
+                <!----- Start Category Pie Chart Tab ----->
+                <div class="pie-chart">
+                    <span class="material-icons-sharp">data_usage</span>
                     <div class="middle">
-                        <div class="left">
-                            <h3>Total Expenses</h3>
-                            <h1>$14,160</h1>
+                        <div class="label">
+                            <h3>Item Categories Distribution</h3>
                         </div>
-                        <div class="progress">
-                            <svg>
-                                <circle cx="38" cy="38" r="36"></circle>
-                            </svg>
-                            <div class="number">
-                                <p>62%</p>
-                            </div>
+                        <!-- Pie Chart Canvas -->
+                        <div class="pie-chart-container">
+                            <canvas id="categoryPieChart"></canvas>
                         </div>
                     </div>
-                    <small class="text-muted"> Last 24 hours </small>
                 </div>
-                <!----- End Tab 2 ----->
+                <!----- End Category Pie Chart Tab ----->
 
-                <!----- Start Tab 3 ----->
-                <div class="income">
-                    <span class="material-icons-sharp"> stacked_line_chart </span>
+                <!----- Start Lowest Quantity Items Tab ----->
+                <div class="lowest-quantity">
+                    <span class="material-icons-sharp"> low_priority </span>
                     <div class="middle">
                         <div class="left">
-                            <h3>Total Income</h3>
-                            <h1>$10,864</h1>
-                        </div>
-                        <div class="progress">
-                            <svg>
-                                <circle cx="38" cy="38" r="36"></circle>
-                            </svg>
-                            <div class="number">
-                                <p>44%</p>
-                            </div>
+                            <h3>Top 3 Items with Lowest Quantity</h3>
+                            <ul>
+                                <?php
+                                // Fetch the top 3 items with the lowest quantity
+                                $lowest_query = "SELECT Name, Quantity FROM inventory ORDER BY Quantity ASC LIMIT 3";
+                                $lowest_result = $conn->query($lowest_query);
+
+                                if ($lowest_result->num_rows > 0) {
+
+                                    while ($row = $lowest_result->fetch_assoc()) {
+                                        echo "<li> {$row['Name']} - Quantity: {$row['Quantity']}</li>";
+                                    }
+                                } else {
+                                    echo "<li>No items found.</li>";
+                                }
+                                ?>
+                            </ul>
                         </div>
                     </div>
-                    <small class="text-muted"> Last 24 hours </small>
                 </div>
-                <!----- End Tab 3 ----->
+                <!----- End Lowest Quantity Items Tab ----->
+
             </div>
 
             <div class="inventory-container">
@@ -425,21 +431,21 @@ $result2 = mysqli_query($conn, $query2);
                     <div class="input-box">
                         <label>Supplier</label>
                         <div class="addsupplier-box">
-                        <input list="supplier" id="supplier_input" name="supplier_input" placeholder="Enter or Select Supplier" value="" autocomplete="off" required >
+                            <input list="supplier" id="supplier_input" name="supplier_input" placeholder="Enter or Select Supplier" value="" autocomplete="off" required>
                             <datalist name="supplier" id="supplier" required>
                                 <?php
-                                    $sql = "SELECT DISTINCT Supplier FROM inventory";
+                                $sql = "SELECT DISTINCT Supplier FROM inventory";
 
-                                    $result = $conn->query($sql);
+                                $result = $conn->query($sql);
 
-                                    // Check if any results were found
-                                    if ($result->num_rows > 0) {
-                                        while ($row = $result->fetch_assoc()) {
-                                            echo "<option value=\"" . $row['Supplier'] . "\">";
-                                        }
-                                    } else {
-                                        echo "No results found.";
+                                // Check if any results were found
+                                if ($result->num_rows > 0) {
+                                    while ($row = $result->fetch_assoc()) {
+                                        echo "<option value=\"" . $row['Supplier'] . "\">";
                                     }
+                                } else {
+                                    echo "No results found.";
+                                }
                                 ?>
                             </datalist>
                         </div>
@@ -449,21 +455,22 @@ $result2 = mysqli_query($conn, $query2);
                     <div class="input-box">
                         <label>Category</label>
                         <div class="addcategory-box">
-                        <input list="category" id="category_input" name="category_input" placeholder="Enter or Select Category" value="" autocomplete="off" required >
+
+                            <input list="category" id="category_input" name="category_input" placeholder="Enter or Select Category" value="" autocomplete="off" required>
                             <datalist name="category" id="category" required>
                                 <?php
-                                    $sql = "SELECT DISTINCT Category FROM inventory";
+                                $sql = "SELECT DISTINCT Category FROM inventory";
 
-                                    $result = $conn->query($sql);
+                                $result = $conn->query($sql);
 
-                                    // Check if any results were found
-                                    if ($result->num_rows > 0) {
-                                        while ($row = $result->fetch_assoc()) {
-                                            echo "<option value=\"" . $row['Category'] . "\">";
-                                        }
-                                    } else {
-                                        echo "No results found.";
+                                // Check if any results were found
+                                if ($result->num_rows > 0) {
+                                    while ($row = $result->fetch_assoc()) {
+                                        echo "<option value=\"" . $row['Category'] . "\">";
                                     }
+                                } else {
+                                    echo "No results found.";
+                                }
                                 ?>
                             </datalist>
                         </div>
@@ -524,21 +531,21 @@ $result2 = mysqli_query($conn, $query2);
                     <div class="input-box">
                         <label>Supplier</label>
                         <div class="editsupplier-box">
-                        <input list="supplier" id="supplier_input_edit" name="supplier_input_edit" placeholder="Enter or Select Supplier" value="" autocomplete="off" required >
+                            <input list="supplier" id="supplier_input_edit" name="supplier_input_edit" placeholder="Enter or Select Supplier" value="" autocomplete="off" required>
                             <datalist name="supplier_edit" id="supplier_edit" required>
                                 <?php
-                                    $sql = "SELECT DISTINCT Supplier FROM inventory";
+                                $sql = "SELECT DISTINCT Supplier FROM inventory";
 
-                                    $result = $conn->query($sql);
+                                $result = $conn->query($sql);
 
-                                    // Check if any results were found
-                                    if ($result->num_rows > 0) {
-                                        while ($row = $result->fetch_assoc()) {
-                                            echo "<option value=\"" . $row['Supplier'] . "\">";
-                                        }
-                                    } else {
-                                        echo "No results found.";
+                                // Check if any results were found
+                                if ($result->num_rows > 0) {
+                                    while ($row = $result->fetch_assoc()) {
+                                        echo "<option value=\"" . $row['Supplier'] . "\">";
                                     }
+                                } else {
+                                    echo "No results found.";
+                                }
                                 ?>
                             </datalist>
                         </div>
@@ -548,21 +555,21 @@ $result2 = mysqli_query($conn, $query2);
                     <div class="input-box">
                         <label>Category</label>
                         <div class="editcategory-box">
-                        <input list="category" id="category_input_edit" name="category_input_edit" placeholder="Enter or Select Category" autocomplete="off" required >
+                            <input list="category" id="category_input_edit" name="category_input_edit" placeholder="Enter or Select Category" autocomplete="off" required>
                             <datalist name="category_edit" id="category_edit" required>
                                 <?php
-                                    $sql = "SELECT DISTINCT Category FROM inventory";
+                                $sql = "SELECT DISTINCT Category FROM inventory";
 
-                                    $result = $conn->query($sql);
+                                $result = $conn->query($sql);
 
-                                    // Check if any results were found
-                                    if ($result->num_rows > 0) {
-                                        while ($row = $result->fetch_assoc()) {
-                                            echo "<option value=\"" . $row['Category'] . "\">";
-                                        }
-                                    } else {
-                                        echo "No results found.";
+                                // Check if any results were found
+                                if ($result->num_rows > 0) {
+                                    while ($row = $result->fetch_assoc()) {
+                                        echo "<option value=\"" . $row['Category'] . "\">";
                                     }
+                                } else {
+                                    echo "No results found.";
+                                }
                                 ?>
                             </datalist>
                         </div>
@@ -589,6 +596,60 @@ $result2 = mysqli_query($conn, $query2);
         <script src="../index/index.js"></script>
         <script src="./inventory.js"></script>
         <script src="./inventoryform.js"></script>
+        <!-- Include Chart.js library -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                // Data from PHP
+                const categories = <?php echo json_encode($categories); ?>;
+                const counts = <?php echo json_encode($counts); ?>;
+
+                // Create the pie chart
+                const ctx = document.getElementById('categoryPieChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: categories.map((category, index) => `${category} (${counts[index]})`), // Show count in legend
+                        datasets: [{
+                            data: counts,
+                            backgroundColor: [
+                                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
+                            ],
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                align: 'center', // Aligns the legend across the chart
+                                labels: {
+                                    boxWidth: 15, // Adjusts the width of the legend boxes
+                                    padding: 10, // Adds some padding between legend items
+                                },
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.label || '';
+                                        label += ': ' + context.raw + ' items';
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        layout: {
+                            padding: {
+                                bottom: 20 // Adds spacing below the chart to ensure room for the legend
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
 
         <script>
             // JavaScript function to send AJAX request to PHP

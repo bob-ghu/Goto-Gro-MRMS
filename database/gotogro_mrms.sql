@@ -189,3 +189,12 @@ CREATE TABLE IF NOT EXISTS notifications (
     is_read BOOLEAN DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE if NOT EXISTS feedback (
+    feedback_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) DEFAULT NULL,
+    email VARCHAR(100) DEFAULT NULL,
+    feedback_type ENUM('suggestion', 'complaint', 'compliment') NOT NULL,
+    comments TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
