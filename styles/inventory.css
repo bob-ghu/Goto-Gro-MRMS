@@ -78,3 +78,152 @@ main .inventory-detail a {
     color: var(--color-primary);
 }
 /* END Inventory */
+
+/* INSIGHTS PANEL */
+main .insights {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.6rem;
+    
+}
+
+main .insights>div {
+    background: var(--color-white);
+    padding: var(--card-padding);
+    border-radius: var(--card-border-radius);
+    margin-top: 1rem;
+    box-shadow: var(--box-shadow);
+    transition: all 300ms ease;
+
+}
+
+main .insights>div:hover {
+    cursor: pointer;
+    box-shadow: none;
+}
+
+main .insights>div span {
+    background: var(--color-primary);
+    padding: 0.5rem;
+    border-radius: 50%;
+    color: var(--color-white);
+    font-size: 2rem;
+}
+
+main .insights .middle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+main .insights h3 {
+    margin: 1rem 0 0.6rem;
+    font-size: 1.5rem;
+}
+
+main .insights h1 {
+    margin: 1rem 0 0.6rem;
+    font-size: 2rem;
+}
+
+main .insights small {
+    margin-top: 1.6rem;
+    display: block;
+}
+
+/* END INSIGHTS */
+
+/* General height adjustment for all tabs */
+main .insights > div {
+    height: 18rem;
+}
+
+/* Adjust widths for specific tabs */
+.total-inventory {
+    grid-column: span 1; /* Takes up one column space */
+}
+
+.pie-chart {
+    grid-column: span 2; /* Takes up two column spaces for a wider chart */
+}
+
+.lowest-quantity {
+    grid-column: span 1; /* Takes up one column space */
+}
+
+/* Styling adjustments for pie chart legend */
+.pie-chart-container {
+    position: relative;
+    margin-top: -8rem;
+}
+
+.pie-chart-container canvas {
+    width: 160%;
+    height: 160%;
+    
+}
+
+#categoryPieChart {
+    margin-bottom: 1rem;
+}
+
+/* Legend alignment at the bottom */
+.chartjs-legend {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding-top: 10px;
+}
+
+.pie-chart .label{
+    margin-top: -12.8rem;
+}
+
+/* Style for the lowest quantity list */
+.lowest-quantity ul {
+    list-style: none; /* Remove default bullet points */
+    padding: 0;
+    margin: 0;
+    margin-top: -0.5rem;
+}
+
+.lowest-quantity ul li {
+    display: flex;
+    align-items: center;
+    
+    padding: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--color-dark); /* Adjust color as needed */
+    border-bottom: 1px solid #ddd; /* Separator line between items */
+}
+
+.lowest-quantity ul li:last-child {
+    border-bottom: none; /* Remove the last separator */
+}
+
+.lowest-quantity ul li span {
+    font-weight: bold;
+    color: var(--color-primary); /* Adjust color to match theme */
+}
+
+/* Optional: number each item with a styled count */
+.lowest-quantity ul li::before {
+    content: counter(item) ". "; /* Adds the number before the item */
+    counter-increment: item; /* Increments the counter */
+    font-weight: bold;
+    margin-right: 2.5rem;
+    color: var(--color-primary); /* Adjust color to match theme */
+}
+
+/* Start counter for item numbering */
+.lowest-quantity ul {
+    counter-reset: item;
+}
+
+main .insights > div.lowest-quantity span{
+    background: #ff7782;
+}
+
+main .insights > div.pie-chart span{
+    background: #41f1b6;
+}
