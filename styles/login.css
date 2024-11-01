@@ -1,0 +1,90 @@
+/* Page Title */
+h1.login {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Form Styles */
+.login-forma {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Legend */
+.login-forma legend {
+    font-size: 1.4rem;
+    color: #007BFF;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+/* Input Labels */
+.login-forma label {
+    font-weight: bold;
+    color: #333;
+}
+
+/* Input Fields */
+.login-forma input[type="text"],
+.login-forma input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+/* Input Fields on Focus */
+.login-forma input[type="text"]:focus,
+.login-forma input[type="password"]:focus {
+    border-color: #007BFF;
+}
+
+/* Hint Text */
+.hint {
+    font-size: 0.8rem;
+    color: #999;
+    margin-top: -10px;
+    margin-bottom: 10px;
+}
+
+/* Submit Button */
+.login-submit input[type="submit"] {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #fff;
+    background-color: #007BFF;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+/* Submit Button Hover */
+.login-submit input[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+/* Timer Section */
+.form-timer {
+    text-align: center;
+    font-size: 1rem;
+    margin-top: 15px;
+    color: #333;
+}
+
+.form-timer span {
+    font-weight: bold;
+    color: #007BFF;
+}
