@@ -124,20 +124,9 @@ if ($category_count_result->num_rows > 0) {
                     <h3>Feedback</h3>
                 </a>
 
-                <a href="#">
+                <a href="../login/logout.php">
                     <span class="material-icons-sharp"> logout </span>
                     <h3>Logout</h3>
-                </a>
-
-                <!----- EXTRA ----->
-                <a href="#">
-                    <span class="material-icons-sharp"> report_gmailerrorred </span>
-                    <h3>Reports</h3>
-                </a>
-
-                <a href="#">
-                    <span class="material-icons-sharp"> settings </span>
-                    <h3>Settings</h3>
                 </a>
             </div>
         </aside>
@@ -391,6 +380,18 @@ if ($category_count_result->num_rows > 0) {
                     ?>
                 </a>
             </div>
+
+            <div class="report-generate">
+                <h2>Export Inventory's CSV</h2>
+                <a href="export_inventory.php" class="download-button">
+                    <div class="report-generate-button">
+                        <!-- Button to generate CSV report -->
+                        <span class="material-icons-sharp">print</span>
+                        <!-- Button to generate CSV report -->
+                        Download Inventory Report as CSV
+                    </div>
+                </a>
+            </div>
         </div>
 
         <!-- Modal Overlay (Form is moved outside the container) -->
@@ -598,26 +599,45 @@ if ($category_count_result->num_rows > 0) {
         <script src="./inventoryform.js"></script>
         <!-- Include Chart.js library -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 
         <script>
             document.addEventListener("DOMContentLoaded", function() {
                 // Data from PHP
                 const categories = <?php echo json_encode($categories); ?>;
                 const counts = <?php echo json_encode($counts); ?>;
+                const totalItems = counts.reduce((sum, count) => sum + count, 0); // Calculate total count of all categories
 
                 // Create the pie chart
                 const ctx = document.getElementById('categoryPieChart').getContext('2d');
                 new Chart(ctx, {
                     type: 'pie',
                     data: {
-                        labels: categories.map((category, index) => `${category} (${counts[index]})`), // Show count in legend
+                        labels: categories.map((category, index) => {
+                            const percentage = ((counts[index] / totalItems) * 100).toFixed(1); // Calculate and format percentage
+                            return `${category} (${counts[index]})`; // Legend shows count and percentage
+                        }),
                         datasets: [{
                             data: counts,
                             backgroundColor: [
-                                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
+                                'rgba(255, 99, 132, 0.2)',
+                                'rgba(54, 162, 235, 0.2)',
+                                'rgba(255, 206, 86, 0.2)',
+                                'rgba(75, 192, 192, 0.2)',
+                                'rgba(153, 102, 255, 0.2)',
+                                'rgba(255, 159, 64, 0.2)',
+                                'rgba(201, 203, 207, 0.2)' // New color
                             ],
+                            borderColor: [
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(153, 102, 255, 1)',
+                                'rgba(255, 159, 64, 1)',
+                                'rgba(201, 203, 207, 1)' // New color
+                            ],
+                            borderWidth: 1
                         }]
                     },
                     options: {
@@ -625,31 +645,46 @@ if ($category_count_result->num_rows > 0) {
                         plugins: {
                             legend: {
                                 position: 'right',
-                                align: 'center', // Aligns the legend across the chart
+                                align: 'center',
                                 labels: {
-                                    boxWidth: 15, // Adjusts the width of the legend boxes
-                                    padding: 10, // Adds some padding between legend items
+                                    boxWidth: 15,
+                                    padding: 10,
                                 },
                             },
                             tooltip: {
                                 callbacks: {
-                                    label: function(context) {
-                                        let label = context.label || '';
-                                        label += ': ' + context.raw + ' items';
-                                        return label;
+                                    title: function() {
+                                        return ''; // Return empty for the title
+                                    },
+                                    label: function(tooltipItem) {
+                                        const label = tooltipItem.label || '';
+                                        const value = tooltipItem.raw || 0;
+                                        return label; // Show name and count
                                     }
+                                }
+                            },
+                            datalabels: {
+                                color: '#000',
+                                font: {
+                                    size: 11
+                                },
+                                formatter: (value, context) => {
+                                    const percentage = ((value / totalItems) * 100).toFixed(1);
+                                    return `${percentage}%`; // Display percentage inside the pie slices
                                 }
                             }
                         },
                         layout: {
                             padding: {
-                                bottom: 20 // Adds spacing below the chart to ensure room for the legend
+                                bottom: 20
                             }
                         }
-                    }
+                    },
+                    plugins: [ChartDataLabels] // Activate the datalabels plugin
                 });
             });
         </script>
+
 
         <script>
             // JavaScript function to send AJAX request to PHP
@@ -684,6 +719,7 @@ if ($category_count_result->num_rows > 0) {
             }
         </script>
     </div>
+
 </body>
 
 </html>

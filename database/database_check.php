@@ -1,9 +1,4 @@
 <?php
-session_start();  // Start the session
-
-// Store data for the first context (e.g., for page 1)
-if (!isset($_SESSION['database_exist'])) {
-
     require_once('settings.php');
 
     $mysqli = new mysqli($host, $user, $pwd);
@@ -32,7 +27,4 @@ if (!isset($_SESSION['database_exist'])) {
 
     // Close the connection
     $mysqli->close();
-
-    $_SESSION['database_exist'] = true;
-}
 ?>

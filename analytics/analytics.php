@@ -218,18 +218,9 @@ $conn->close(); // Close the database connection
                     <span class="material-icons-sharp"> feedback </span>
                     <h3>Feedback</h3>
                 </a>
-                <a href="#">
+                <a href="../login/logout.php">
                     <span class="material-icons-sharp"> logout </span>
                     <h3>Logout</h3>
-                </a>
-                <!----- EXTRA ----->
-                <a href="#">
-                    <span class="material-icons-sharp"> report_gmailerrorred </span>
-                    <h3>Reports</h3>
-                </a>
-                <a href="#">
-                    <span class="material-icons-sharp"> settings </span>
-                    <h3>Settings</h3>
                 </a>
             </div>
         </aside>
@@ -340,6 +331,25 @@ $conn->close(); // Close the database connection
                     }
                     ?>
                 </a>
+            </div>
+
+            <div class="report-generate">
+                <h2>Export Analytics Data</h2>
+
+                <form method="POST" action="export_analytics.php" class="report-type-form">
+                    <h4>Select Report Type:</h4>
+                    <select name="report_type" id="report_type" required>
+                        <option value="">--Select a report--</option>
+                        <option value="member_sales">Member Sales Data</option>
+                        <option value="time_period_sales">Time Period Sales Data</option>
+                    </select>
+                    <button class="submit">
+                        <div class="report-generate-button">
+                            <span class="material-icons-sharp">print</span>
+                            Generate Report
+                        </div>
+                    </button>
+                </form>
             </div>
         </div>
 
@@ -569,6 +579,8 @@ $conn->close(); // Close the database connection
 
             loadMembers(); // Call to load members on page load
         </script>
+
+
 </body>
 
 </html>

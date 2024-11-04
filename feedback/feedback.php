@@ -89,18 +89,9 @@ if (!$feedbackResult) {
                     <span class="material-icons-sharp"> feedback </span>
                     <h3>Feedback</h3>
                 </a>
-                <a href="#">
+                <a href="../login/logout.php">
                     <span class="material-icons-sharp"> logout </span>
                     <h3>Logout</h3>
-                </a>
-                <!----- EXTRA ----->
-                <a href="#">
-                    <span class="material-icons-sharp"> report_gmailerrorred </span>
-                    <h3>Reports</h3>
-                </a>
-                <a href="#">
-                    <span class="material-icons-sharp"> settings </span>
-                    <h3>Settings</h3>
                 </a>
             </div>
         </aside>

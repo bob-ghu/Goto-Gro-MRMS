@@ -1,108 +1,177 @@
+<?php
+require_once("../database/settings.php"); // Connection info
+$conn = @mysqli_connect($host, $user, $pwd);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Query to check if the database exists
+$sql = "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'gotogro_mrms'";
+
+$result = $conn->query($sql);
+
+if ($result->num_rows == 0) {
+    require_once '../database/database_check.php';
+}
+
+// Close the connection
+$conn->close();
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Goto Gro MRMS</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Goto Gro MRMS</title>
 
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
-  <link rel="stylesheet" href="../styles/style.css" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
+    <link rel="stylesheet" href="../styles/login.css" />
 </head>
+
 <body>
-    <h1>Staff Login</h1>
-    <form action="login.php" method="post" class="login-form">
-        <legend>Login</legend>
-        <section class="username-password">
-            <section>
-                <p><label for="username">Username:</label></p>
-                <p><input type="text" id="username" name="Username" maxlength="20" size="24" placeholder="SiewMG" required></p>
-                <p class="hint">Hint: SiewMG</p>
+    <div class="login-form-container">
+        <h1>Staff Login</h1>
+        <form action="login.php" method="post" id="loginform" class="login-form">
+            <legend>Login</legend>
+            <div class="input-box">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="Username" maxlength="20" placeholder="Guest" required>
+                <p class="hint">Hint: Guest</p>
+            </div>
+            <div class="input-box">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="Password" maxlength="20" placeholder="guess" required>
+                <p class="hint">Hint: guess</p>
+            </div>
+
+            <section class="login-submit">
+                <button type="submit">Login</button>
             </section>
-            <section>
-                <p><label for="password">Password:</label></p>
-                <p><input type="password" id="password" name="Password" maxlength="20" size="24" placeholder="Password" required></p>
-                <p class="hint">Hint: Password</p>
-            </section>
-        </section>
-        <section class="login-submit">
-            <input id=login type="submit" value="Login">
-        </section>
-    </form>
+        </form>
+    </div>
+
+    <script>
+        function formTimer(seconds) {
+            const minutesElement = document.getElementById("minutes"); // Get elements to change its content
+            const secondsElement = document.getElementById("seconds");
+
+            setInterval(updateTimer, 1000); // Set interval to every 1 second
+
+            function updateTimer() {
+                seconds--;
+                if (seconds === 0) { // Timer runs out
+                    window.location.href = window.location.href;
+                }
+                updateDisplay(); // Updates timer display every second
+            }
+
+            function updateDisplay() {
+                let minutes = Math.floor(seconds / 60); // Takes only the integer part of the value
+                let remainingSeconds = seconds % 60; // Takes the remainder of the value
+                minutesElement.textContent = String(minutes).padStart(2, "0"); // Pads the rest of the value with 0 until 2 digits and displays the text
+                secondsElement.textContent = String(remainingSeconds).padStart(2, "0");
+            }
+        }
+    </script>
     <?php
-        session_start(); // Start the session
+    session_start();
 
-        if (!isset($_SESSION['login_attempts'])) {
-            $_SESSION['login_attempts'] = 0;
+    if (!isset($_SESSION['login_attempts'])) {
+        $_SESSION['login_attempts'] = 0;
+    }
+
+    // Redirect if already logged in
+    if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
+        header('Location: ../index/index.php');
+        exit;
+    }
+
+    // Check if the form is submitted
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        $blockedDuration = 8; // Block duration in seconds
+
+        if ($_SESSION['login_attempts'] >= 5) {
+            if (!isset($_SESSION['loginBlockedTime'])) {
+                $_SESSION['loginBlockedTime'] = time(); // Start block timer
+            }
+
+            $timeElapsed = time() - $_SESSION['loginBlockedTime'];
+            if ($timeElapsed >= $blockedDuration) {
+                // Reset attempts after block duration passes
+                $_SESSION['login_attempts'] = 0;
+                unset($_SESSION['loginBlockedTime']);
+            } else {
+                // Display timer if within block duration
+                echo "<section class=\"form-timer\">
+                            <p>Too many failed login attempts. Please try again in: </p>
+                            <span id=\"minutes\">00</span>:
+                            <span id=\"seconds\">00</span>
+                        </section>";
+                echo "<script>formTimer(" . $blockedDuration - $timeElapsed . ")</script>";
+                exit;
+            }
         }
 
-        if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) { // If user has logged in once during session, they don't have to login again
-            header('Location: ../index/index.php');
-            exit;
-        }
+        // Proceed with login check if not blocked
+        $username = sanitize($_POST['Username']);
+        $password = sanitize($_POST['Password']);
 
-        // Check if the form is submitted
-        if ($_SERVER["REQUEST_METHOD"] == "POST") {
-            if ($_SESSION['login_attempts'] < 5) {
-                // Get the form data
-                $username = sanitize($_POST['Username']);
-                $password = sanitize($_POST['Password']);
+        require_once("../database/settings.php"); // Connection info
+        $conn = @mysqli_connect($host, $user, $pwd, $sql_db);
 
-                require_once ("../database/settings.php"); // Connection info
+        if (!$conn) {
+            echo "<p class=\"error\">Database connection failure.</p>";
+        } else {
+            // Query to search for records matching both Username and Password
+            $query = "SELECT * FROM staff WHERE Username = '$username' AND Password = '$password'";
+            $result = @mysqli_query($conn, $query);
 
-                $conn = @mysqli_connect($host, $user, $pwd, $sql_db); // Create a connection to the database
-                
-                if (!$conn) { 
-                    echo "<p class=\"error\">Database connection failure.</p>";
-                }
-                else {
-                    // Query to search for records matching both Username and Password
-                    $query = "SELECT * FROM staff WHERE Username = '$username' AND Password = '$password'";
-                    $result =  @mysqli_query($conn, $query);
-                    if (!$result) {
-                        echo "<p>Something went wrong in the query.</p>";
-                    } else {
-                        if ($result->num_rows > 0) { // Checks if any records match the query
-                            // Output data of each row
-                            while($row = $result->fetch_assoc()) {
-                                // Store session data
-                                $_SESSION["id"] = $row["id"];
-                            }
-                            $_SESSION['loggedin'] = true; // User won't have to login again until they logout in the same session
-
-                            header("Location: ../index/index.php"); // Redirect to EOI Management Page
-                            exit;
-                        } else {
-                            echo "Invalid username or password.";
-                            $_SESSION['login_attempts']++;
-                        }
+            if (!$result) {
+                echo "<p>Something went wrong in the query.</p>";
+            } else {
+                if ($result->num_rows > 0) { // Login successful
+                    while ($row = $result->fetch_assoc()) {
+                        $_SESSION["id"] = $row["id"];
                     }
-                    mysqli_close($conn); // Close the database connection
-                }
-            }
-            else {
-                if (!isset($_SESSION['loginBlockedTime'])) {
-                    $_SESSION['loginBlockedTime'] = time();
-                }
-                else if (abs($_SESSION['loginBlockedTime'] - time()) >= 30) {
+                    $_SESSION['loggedin'] = true;
                     $_SESSION['login_attempts'] = 0;
-                    unset($_SESSION['loginBlockedTime']);
-                }
-                else {
-                    echo "login blocked";
-                    echo "Wait for" . abs($_SESSION['loginBlockedTime'] + 30 - time()) . "seconds";
+                    header("Location: ../index/index.php");
+                    exit;
+                } else { // Login failed
+                    $_SESSION['login_attempts']++;
+                    if ($_SESSION['login_attempts'] < 5) {
+                        echo "<div class=\"error\">Invalid username or password.</div>"; // Enhanced error message
+                    } else {
+                        // Display timer immediately when reaching 5 attempts
+                        $_SESSION['loginBlockedTime'] = time(); // Start block timer
+                        echo "<div class=\"form-timer\">
+                    <p>Too many failed login attempts. Please try again in:</p>
+                    <span id=\"minutes\">00</span>:<span id=\"seconds\">00</span>
+                </div>";
+                        echo "<script>formTimer($blockedDuration)</script>";
+                        exit;
+                    }
                 }
             }
+            mysqli_close($conn);
         }
+    }
 
-        function sanitize($str) { // Removes trailing/trailing spaces, backslashes and HTML control characters.
-            $str = trim($str); // Removes leading and trailing spaces,
-            $str = stripslashes($str); // Removes backslashes
-            $str = preg_replace('/[[:cntrl:]]/', '', $str); // Removes HTML control characters
-            $sanitized_str = preg_replace("/'/", '', $str); // Removes quotation marks
-            return $sanitized_str;
-        }
+    // Sanitization function
+    function sanitize($str)
+    {
+        $str = trim($str);
+        $str = stripslashes($str);
+        $str = preg_replace('/[[:cntrl:]]/', '', $str);
+        $sanitized_str = preg_replace("/'/", '', $str);
+        return $sanitized_str;
+    }
     ?>
 </body>
+
 </html>

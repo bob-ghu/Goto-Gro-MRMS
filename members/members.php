@@ -119,20 +119,9 @@ $active_percentage = ($total_members > 0) ? ($active_count / $total_members) * 1
                     <h3>Feedback</h3>
                 </a>
 
-                <a href="#">
+                <a href="../login/logout.php">
                     <span class="material-icons-sharp"> logout </span>
                     <h3>Logout</h3>
-                </a>
-
-                <!----- EXTRA ----->
-                <a href="#">
-                    <span class="material-icons-sharp"> report_gmailerrorred </span>
-                    <h3>Reports</h3>
-                </a>
-
-                <a href="#">
-                    <span class="material-icons-sharp"> settings </span>
-                    <h3>Settings</h3>
                 </a>
             </div>
         </aside>
@@ -152,7 +141,7 @@ $active_percentage = ($total_members > 0) ? ($active_count / $total_members) * 1
                         <div class="progress">
                         </div>
                     </div>
-                    
+
                 </div>
 
                 <!-- Active Members -->
@@ -409,6 +398,18 @@ $active_percentage = ($total_members > 0) ? ($active_count / $total_members) * 1
                     ?>
                 </a>
             </div>
+
+            <div class="report-generate">
+                <h2>Export Member's CSV</h2>
+                <a href="export_members.php" class="download-button">
+                    <div class="report-generate-button">
+                        <!-- Button to generate CSV report -->
+                        <span class="material-icons-sharp">print</span>
+                        Download Member Report as CSV
+                    </div>
+                </a>
+            </div>
+
         </div>
 
         <!-- Modal Overlay (Form is moved outside the container) -->
@@ -674,10 +675,14 @@ $active_percentage = ($total_members > 0) ? ($active_count / $total_members) * 1
                     datasets: [{
                         data: [activeCount, inactiveCount],
                         backgroundColor: [
-                            'rgba(65, 241, 182, 1)', // Green for active
-                            'rgba(255, 119, 130, 1)' // Red for inactive
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(255, 99, 132, 0.2)',
                         ],
-                        hoverOffset: 4
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 99, 132, 1)',
+                        ],
+                        borderWidth: 1,
                     }]
                 },
                 options: {
@@ -775,6 +780,7 @@ $active_percentage = ($total_members > 0) ? ($active_count / $total_members) * 1
             }
         </script>
     </div>
+
 </body>
 
 </html>

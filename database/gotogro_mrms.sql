@@ -207,3 +207,11 @@ CREATE TABLE IF NOT EXISTS staff (
 	Password VARCHAR(30) NOT NULL,
 	Role VARCHAR(10) NOT NULL
 );
+
+INSERT INTO staff (Full_Name, Username, Email_Address, Password, Role)
+VALUES
+('Siew Yat Fei', 'Bob', 'siew@gmail.com', 'Password', 'Manager'),
+('Goh Mun Hong', 'Hong', 'hong@gmail.com', 'munhong', 'Staff'),
+('Chan Chun Xian', 'CCX', 'ccx@gmail.com', 'chunxian', 'Staff'),
+('Samuel Ho Shenhao', 'Sam', 'sam@gmail.com', 'hohoho', 'Staff'),
+('Guest', 'Guest', 'guest@gmail.com', 'guess', 'Staff');

@@ -7,8 +7,10 @@
 }
 
 .pie-chart-container canvas {
-  width: 100%;
-  height: 80rem;
+  max-width: 300px;
+  min-width: 300px;
+  max-height: 300px;
+  min-height: 300px;
   position: relative;
 }
 
@@ -16,7 +18,7 @@
 .pie-chart-container {
   width: 500px;
   height: 500px;
-  margin: 0 auto;
+  margin-top: -1rem;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -31,8 +33,8 @@
 /* Optional: Adjust for smaller screens */
 @media (max-width: 768px) {
   .pie-chart-container {
-    max-width: 300px;
-    max-height: 300px;
+    max-width: 200px;
+    max-height: 200px;
   }
 }
 
@@ -69,7 +71,7 @@ main .graph {
   text-align: center;
   box-shadow: var(--box-shadow);
   transition: all 300ms ease;
-  margin-top: -5rem;
+  margin-top: -5.5rem;
 }
 
 
@@ -87,7 +89,7 @@ main .insights .pie-chart{
 
   box-shadow: 0 0rem 1rem var(--color-light);
   transition: all 300ms ease;
-  height: 80%;
+  height: 78%;
 }
 
 main .insights>div:hover {
@@ -126,7 +128,7 @@ main .insights h3 {
 
   box-shadow: 0 0rem 1rem var(--color-light);
   transition: all 300ms ease;
-  height: 80%;
+  height: 78%;
 }
 
 /* Headings */

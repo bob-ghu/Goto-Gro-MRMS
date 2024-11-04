@@ -1,81 +1,81 @@
 .member-container .add-member {
-    background: transparent;
-    border: 2px dashed var(--color-primary);
-    color: var(--color-primary);
-    display: flex;
-    justify-content: center;
-    width: 50%;
-    height: 4rem;
-    border-radius: var(--border-radius-3);
+  background: transparent;
+  border: 2px dashed var(--color-primary);
+  color: var(--color-primary);
+  display: flex;
+  justify-content: center;
+  width: 50%;
+  height: 4rem;
+  border-radius: var(--border-radius-3);
 }
 
 main .member-detail-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
 }
 
 /* Adjusting the button width */
 .member-container .add-member {
-    width: 20%;
+  width: 20%;
 }
 
 .member-container .add-member:hover {
-    background: var(--color-primary);
-    color: white;
+  background: var(--color-primary);
+  color: white;
 }
 
 .member-container .add-member div {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
 }
 
 .member-container .add-member h3 {
-    font-weight: 600;
+  font-weight: 600;
 }
 
 /* START Members Detail TABLE */
 main .member-detail {
-    margin-top: 2rem;
+  margin-top: 2rem;
 
 }
 
 main .member-detail h2 {
-    margin-bottom: 0.8rem;
+  margin-bottom: 0.8rem;
 }
 
 main .member-detail table {
-    background: var(--color-white);
-    width: 100%;
-    border-radius: var(--card-border-radius);
-    padding: var(--card-padding);
-    text-align: center;
-    box-shadow: var(--box-shadow);
-    transition: all 300ms ease;
+  background: var(--color-white);
+  width: 100%;
+  border-radius: var(--card-border-radius);
+  padding: var(--card-padding);
+  text-align: center;
+  box-shadow: var(--box-shadow);
+  transition: all 300ms ease;
 }
 
 main .member-detail table:hover {
-    cursor: pointer;
-    box-shadow: none;
+  cursor: pointer;
+  box-shadow: none;
 }
 
 main table tbody td {
-    height: 2.8rem;
-    border-bottom: 1px solid var(--color-light);
-    color: var(--color-dark-variant);
+  height: 2.8rem;
+  border-bottom: 1px solid var(--color-light);
+  color: var(--color-dark-variant);
 }
 
 main table tbody tr:last-child td {
-    border: none;
+  border: none;
 }
 
 main .member-detail a {
-    text-align: center;
-    display: block;
-    margin: 1rem auto;
-    color: var(--color-primary);
+  text-align: center;
+  display: block;
+  margin: 1rem auto;
+  color: var(--color-primary);
 }
 
 main .member-detail .edit-btn {
@@ -85,89 +85,92 @@ main .member-detail .edit-btn {
   color: var(--color-primary);
 }
 
-.member-status{
+.member-status {
   color: var(--color-primary);
   background: var(--color-white);
 }
+
 /* END RECENT MEMBER */
 
 /* START MEMBER SEARCH */
 .right .notification-section {
-    margin-top: 2rem;
-  }
-  .right .notification-section h2 {
-    margin-bottom: 0.8rem;
-  }
-  
-  .right .notification-section .message-count{
-    background: var(--color-danger);
-    color: var(--color-white);
-    margin-left: 0.5rem;
-    padding: 2px 9px;
-    font-size: 18px;
-    border-radius: var(--border-radius-1);
-  }
-  
-  .right .notification-section .item {
-    background: var(--color-white);
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 0.7rem;
-    padding: 1.4rem var(--card-padding);
-    border-radius: var(--border-radius-3);
-    box-shadow: var(--box-shadow);
-    transition: all 300ms ease;
-  }
-  
-  .right .notification-section .item:hover {
-    cursor: pointer;
-    box-shadow: none;
-  }
-  .right .notification-section .item .right {
-    display: flex;
-    justify-content: space-between;
-    align-items: start;
-    margin: 0;
-    width: 100%;
-  }
-  .right .notification-section .item .icon {
-    color: var(--color-white);
-    border-radius: 50%;
-    background: var(--color-primary);
-    display: flex;
-  }
-  
-  .right .notification-section .item .icon .material-icons-sharp{
-    font-size: 35px;
-  }
-  
-  .right .notification-section .item.alert .icon {
-    background: var(--color-warning);
-    
-  }
-  
-  .right .notification-section .item.warning .icon {
-    background: var(--color-danger);
-  }
-  
-  .right .notification-section .item.info .icon {
-    background: var(--color-primary);
-  }
-  
-  .right .notification-section .item.alert {
-    background: var(--color-warning);
-    
-  }
-  
-  .right .notification-section .item.warning {
-    background: var(--color-danger);
-  }
-  
-  .right .notification-section .item.info {
-    background: var(--color-primary);
-  }
-  /* END MEMBER SEARCH */
+  margin-top: 2rem;
+}
+
+.right .notification-section h2 {
+  margin-bottom: 0.8rem;
+}
+
+.right .notification-section .message-count {
+  background: var(--color-danger);
+  color: var(--color-white);
+  margin-left: 0.5rem;
+  padding: 2px 9px;
+  font-size: 18px;
+  border-radius: var(--border-radius-1);
+}
+
+.right .notification-section .item {
+  background: var(--color-white);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.7rem;
+  padding: 1.4rem var(--card-padding);
+  border-radius: var(--border-radius-3);
+  box-shadow: var(--box-shadow);
+  transition: all 300ms ease;
+}
+
+.right .notification-section .item:hover {
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.right .notification-section .item .right {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin: 0;
+  width: 100%;
+}
+
+.right .notification-section .item .icon {
+  color: var(--color-white);
+  border-radius: 50%;
+  background: var(--color-primary);
+  display: flex;
+}
+
+.right .notification-section .item .icon .material-icons-sharp {
+  font-size: 35px;
+}
+
+.right .notification-section .item.alert .icon {
+  background: var(--color-warning);
+
+}
+
+.right .notification-section .item.warning .icon {
+  background: var(--color-danger);
+}
+
+.right .notification-section .item.info .icon {
+  background: var(--color-primary);
+}
+
+.right .notification-section .item.alert {
+  background: var(--color-warning);
+
+}
+
+.right .notification-section .item.warning {
+  background: var(--color-danger);
+}
+
+.right .notification-section .item.info {
+  background: var(--color-primary);
+}
 
 /* INSIGHTS PANEL */
 main .insights {
@@ -176,7 +179,7 @@ main .insights {
   gap: 1.6rem;
 }
 
-main .insights > div {
+main .insights>div {
   background: var(--color-white);
   padding: var(--card-padding);
   border-radius: var(--card-border-radius);
@@ -186,12 +189,12 @@ main .insights > div {
 
 }
 
-main .insights > div:hover {
+main .insights>div:hover {
   cursor: pointer;
   box-shadow: none;
 }
 
-main .insights > div span {
+main .insights>div span {
   background: var(--color-primary);
   padding: 0.5rem;
   border-radius: 50%;
@@ -199,7 +202,7 @@ main .insights > div span {
   font-size: 2rem;
 }
 
-main .insights > div.active-members span {
+main .insights>div.active-members span {
   background: var(--color-success);
 }
 
@@ -233,7 +236,8 @@ main .insights svg {
 
 main .insights .progress circle {
   fill: none;
-  stroke: #e0e0e0; /* Background circle color */
+  stroke: #e0e0e0;
+  /* Background circle color */
   stroke-width: 11;
   transform: translate(5px, 5px);
 }
@@ -243,8 +247,10 @@ main .insights .progress .progress-circle {
   stroke: var(--color-primary);
   stroke-width: 11;
   stroke-linecap: rect;
-  stroke-dasharray: 226.2; /* Circumference of 36px radius */
-  stroke-dashoffset: 226.2; /* Initial offset (100%) */
+  stroke-dasharray: 226.2;
+  /* Circumference of 36px radius */
+  stroke-dashoffset: 226.2;
+  /* Initial offset (100%) */
   transition: stroke-dashoffset 0.6s ease;
 }
 
@@ -264,44 +270,57 @@ main .insights small {
   margin-top: 1.6rem;
   display: block;
 }
+
 /* END INSIGHTS */
 
 .legend {
   display: flex;
   align-items: center;
-  margin-top: 1rem; /* Space above the legend */
-  
+  margin-top: 1rem;
+  /* Space above the legend */
+
 }
 
 /*Active Members Chart*/
 .pie-chart-container .legend-item {
   display: flex;
   align-items: center;
-  margin-right: 1.5rem; /* Space between legend items */
+  margin-right: 1.5rem;
+  /* Space between legend items */
 }
 
 .pie-chart-container .legend-item div {
-  width: 1rem; /* Width of the color box */
-  height: 1rem; /* Height of the color box */
-  border-radius: 3px; /* Rounded corners */
-  margin-right: 0.5rem; /* Space between color box and label */
+  width: 1rem;
+  /* Width of the color box */
+  height: 1rem;
+  /* Height of the color box */
+  border-radius: 3px;
+  /* Rounded corners */
+  margin-right: 0.5rem;
+  /* Space between color box and label */
 }
 
 .pie-chart-container .active {
-  background-color: var(--color-success); /* Color for active members */
+  background-color: var(--color-success);
+  /* Color for active members */
 }
 
 .pie-chart-container .inactive {
-  background-color: var(--color-danger); /* Color for inactive members */
+  background-color: var(--color-danger);
+  /* Color for inactive members */
 }
 
 .pie-chart-container {
-  text-align: center; /* Center the chart */
+  text-align: center;
+  /* Center the chart */
   margin-left: -4rem;
   margin-top: -3rem;
 }
 
 #membersPieChart {
-  max-width: 140px; /* Set a maximum width */
-  margin: 0 auto; /* Center the canvas */
+  max-width: 140px;
+  /* Set a maximum width */
+  margin: 0 auto;
+  /* Center the canvas */
 }
+
