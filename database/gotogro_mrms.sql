@@ -187,14 +187,31 @@ CREATE TABLE IF NOT EXISTS notifications (
     message TEXT NOT NULL,
     notification_type ENUM('info', 'alert', 'warning') NOT NULL,
     is_read BOOLEAN DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE if NOT EXISTS feedback (
+CREATE TABLE IF NOT EXISTS feedback (
     feedback_id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) DEFAULT NULL,
-    email VARCHAR(100) DEFAULT NULL,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL,
     feedback_type ENUM('suggestion', 'complaint', 'compliment') NOT NULL,
     comments TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS staff (
+    Staff_ID INT(5) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	Full_Name VARCHAR(50) NOT NULL,
+    Username VARCHAR(50) NOT NULL,
+	Email_Address VARCHAR(50) NOT NULL,
+	Password VARCHAR(30) NOT NULL,
+	Role VARCHAR(10) NOT NULL
+);
+
+INSERT INTO staff (Full_Name, Username, Email_Address, Password, Role)
+VALUES
+('Siew Yat Fei', 'Bob', 'siew@gmail.com', 'Password', 'Manager'),
+('Goh Mun Hong', 'Hong', 'hong@gmail.com', 'munhong', 'Staff'),
+('Chan Chun Xian', 'CCX', 'ccx@gmail.com', 'chunxian', 'Staff'),
+('Samuel Ho Shenhao', 'Sam', 'sam@gmail.com', 'hohoho', 'Staff'),
+('Guest', 'Guest', 'guest@gmail.com', 'guess', 'Staff');

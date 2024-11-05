@@ -9,17 +9,18 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$period = $_GET['period'] ?? 'monthly';
+$memberId = $_GET['Member_ID'] ?? null;
+$period = $_GET['period'] ?? 'daily';
 
 if (isset($_GET['period'])) {
     //$period = $_GET['period'];
     $specificDate = $_GET['specific_date'] ?? null; // Get specific date if provided
     $specificMonth = $_GET['specific_month'] ?? null; // Get specific month if provided
 
-    $categoryQuantities = getCategoryQuantities($conn, $period, $specificDate, $specificMonth);
+    $categoryQuantities = getCategoryQuantities($conn, $period, $specificDate, $specificMonth, $memberId);
 
     // Call the function to get top frequent items based on the selected period
-    $topItems = getTopFrequentItemsByPeriod($conn, $period, $specificDate, $specificMonth);
+    $topItems = getTopFrequentItemsByPeriod($conn, $period, $specificDate, $specificMonth, $memberId);
 
     echo json_encode([
         'categoryQuantities' => $categoryQuantities, // For pie chart
@@ -28,8 +29,13 @@ if (isset($_GET['period'])) {
     exit;
 }
 
-function getCategoryQuantities($conn, $period, $specificDate = null, $specificMonth = null)
+function getCategoryQuantities($conn, $period, $specificDate = null, $specificMonth = null, $memberId = null)
 {
+    $memberCondition = '';
+    if ($memberId) {
+        $memberCondition = "AND sales.Member_ID = '$memberId'"; // Assuming there's a Member_ID in the sales table
+    }
+
     $dateCondition = '';
 
     // Set the date condition based on the selected period
@@ -49,7 +55,7 @@ function getCategoryQuantities($conn, $period, $specificDate = null, $specificMo
     $sql1 = "SELECT inventory.Category AS Item_Category, SUM(sales.Quantity) AS Total_Quantity
             FROM sales 
             JOIN inventory ON sales.Item_ID = inventory.Item_ID
-            WHERE $dateCondition
+            WHERE $dateCondition $memberCondition
             GROUP BY inventory.Category";
     $result1 = $conn->query($sql1);
 
@@ -62,8 +68,13 @@ function getCategoryQuantities($conn, $period, $specificDate = null, $specificMo
     return $categoryData;
 }
 
-function getTopFrequentItemsByPeriod($conn, $period, $specificDate = null, $specificMonth = null)
+function getTopFrequentItemsByPeriod($conn, $period, $specificDate = null, $specificMonth = null, $memberId = null)
 {
+    $memberCondition = '';
+    if ($memberId) {
+        $memberCondition = "AND sales.Member_ID = '$memberId'"; // Assuming there's a Member_ID in the sales table
+    }
+
     // Determine date condition based on period
     $dateCondition = '';
     switch ($period) {
@@ -96,7 +107,7 @@ function getTopFrequentItemsByPeriod($conn, $period, $specificDate = null, $spec
     $sql2 = "SELECT inventory.Name AS item_name, SUM(sales.Quantity) AS total_quantity
             FROM sales
             JOIN inventory ON sales.Item_ID = inventory.Item_ID
-            WHERE $dateCondition
+            WHERE $dateCondition $memberCondition
             GROUP BY sales.Item_ID
             ORDER BY total_quantity DESC
             LIMIT 10";
@@ -112,6 +123,27 @@ function getTopFrequentItemsByPeriod($conn, $period, $specificDate = null, $spec
         ];
     }
     return $topItems;
+}
+
+function getMembers($conn)
+{
+    $sql = "SELECT Member_ID, Full_Name FROM members";
+    $result = $conn->query($sql);
+
+    $members = [];
+    while ($row = $result->fetch_assoc()) {
+        $members[] = [
+            'id' => $row['Member_ID'],
+            'name' => $row['Full_Name']
+        ];
+    }
+    return $members;
+}
+
+if (isset($_GET['fetch_members'])) {
+    $members = getMembers($conn);
+    echo json_encode($members);
+    exit; // Stop further execution after sending members data
 }
 
 // Notification count
@@ -136,6 +168,7 @@ $conn->close(); // Close the database connection
     <link rel="stylesheet" href="../styles/style.css" />
     <link rel="stylesheet" href="../styles/analytics.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 </head>
 
 <body>
@@ -185,18 +218,9 @@ $conn->close(); // Close the database connection
                     <span class="material-icons-sharp"> feedback </span>
                     <h3>Feedback</h3>
                 </a>
-                <a href="#">
+                <a href="../login/logout.php">
                     <span class="material-icons-sharp"> logout </span>
                     <h3>Logout</h3>
-                </a>
-                <!----- EXTRA ----->
-                <a href="#">
-                    <span class="material-icons-sharp"> report_gmailerrorred </span>
-                    <h3>Reports</h3>
-                </a>
-                <a href="#">
-                    <span class="material-icons-sharp"> settings </span>
-                    <h3>Settings</h3>
                 </a>
             </div>
         </aside>
@@ -207,8 +231,10 @@ $conn->close(); // Close the database connection
             <h1>Analytics</h1>
 
             <div class="insights">
+
                 <div class="filter">
-                    <h3>Select Sales Period</h3>
+                    <h3>Filter</h3>
+                    <h4>Select Sales Period</h4>
                     <select id="salesPeriod" onchange="toggleInputFields()">
                         <option value="daily">Daily</option>
                         <option value="weekly">Weekly</option>
@@ -218,9 +244,15 @@ $conn->close(); // Close the database connection
                     </select>
                     <input type="date" id="specificDate" style="display: none;" placeholder="Select Date">
                     <input type="month" id="specificMonth" style="display: none;" placeholder="Select Month">
-                    <button onclick="updateChart(); updateCategoryChart();">Update Chart</button>
 
+                    <h4>Select Member</h4>
+                    <select id="memberSelect">
+                        <option value="" selected>Select a member</option>
+                        <!-- Options will be populated via JavaScript -->
+                    </select>
+                    <button onclick="updateCharts()">Update Chart</button>
                 </div>
+
                 <div class="pie-chart">
                     <div class="middle">
                         <div class="label">
@@ -231,6 +263,7 @@ $conn->close(); // Close the database connection
                         <div class="pie-chart-container">
                             <canvas id="categoryPieChart"></canvas>
                         </div>
+                        <div id="chartLegend" class="custom-legend"></div> <!-- Legend container outside canvas -->
                     </div>
                 </div>
             </div>
@@ -299,11 +332,31 @@ $conn->close(); // Close the database connection
                     ?>
                 </a>
             </div>
+
+            <div class="report-generate">
+                <h2>Export Analytics Data</h2>
+
+                <form method="POST" action="export_analytics.php" class="report-type-form">
+                    <h4>Select Report Type:</h4>
+                    <select name="report_type" id="report_type" required>
+                        <option value="">--Select a report--</option>
+                        <option value="member_sales">Member Sales Data</option>
+                        <option value="time_period_sales">Time Period Sales Data</option>
+                    </select>
+                    <button class="submit">
+                        <div class="report-generate-button">
+                            <span class="material-icons-sharp">print</span>
+                            Generate Report
+                        </div>
+                    </button>
+                </form>
+            </div>
         </div>
 
         <!-- Display Category Data in a Pie Chart -->
         <script>
             let categoryPieChart;
+            let salesChart; // Declare the variable for the sales chart instance
 
             function toggleInputFields() {
                 const period = document.getElementById('salesPeriod').value;
@@ -311,13 +364,15 @@ $conn->close(); // Close the database connection
                 document.getElementById('specificMonth').style.display = period == 'specific_month' ? 'block' : 'none';
             }
 
-            // Function to update the pie chart for category quantities
-            function updateCategoryChart() {
+            function updateCharts() {
                 const period = document.getElementById('salesPeriod').value; // Get selected period
-                let url = `analytics.php?period=${period}`; // Base URL for fetching data
+                const memberId = document.getElementById('memberSelect').value; // Get selected member ID
+                let url = `analytics.php?period=${period}`;
                 let selectedPeriodText = '';
                 let specificDate = null;
                 let specificMonth = null;
+
+                console.log('Fetching data from:', url); // Debugging
 
                 // Add specific date or month to URL if applicable
                 if (period === 'specific_date') {
@@ -329,30 +384,45 @@ $conn->close(); // Close the database connection
                     url += `&specific_month=${specificMonth}`; // Append to URL
                     selectedPeriodText = `Sales in ${specificMonth}`; // Update display text
                 } else {
-                    selectedPeriodText = `Sales - ${period.charAt(0).toUpperCase() + period.slice(1)}`; // Update display text for daily or weekly
+                    selectedPeriodText = `Sales - ${period.charAt(0).toUpperCase() + period.slice(1)}`; // Format period text
+                }
+
+                if (memberId) {
+                    url += `&Member_ID=${memberId}`;
                 }
 
                 // Set the selected period display text
                 document.getElementById('selectedPeriod1').innerText = selectedPeriodText;
+                document.getElementById('selectedPeriod2').innerText = selectedPeriodText;
 
-                // Fetch data for the pie chart
+                // Fetch data for both charts
                 fetch(url)
                     .then(response => response.json())
                     .then(data => {
-                        const ctx1 = document.getElementById('categoryPieChart').getContext('2d');
+                        console.log('Data received:', data); // Debugging
 
+
+                        // Update Pie Chart for Category Quantities
+                        const ctx1 = document.getElementById('categoryPieChart').getContext('2d');
                         if (categoryPieChart) {
-                            categoryPieChart.destroy();
+                            categoryPieChart.destroy(); // Destroy previous chart instance if it exists
                         }
 
-                        // Create a new chart instance
+                        // Check if a member is selected
+                        const selectedMemberName = document.getElementById('memberSelect').value ?
+                            document.getElementById('memberSelect').selectedOptions[0].text :
+                            '';
+
+                        // Set the title based on whether a member is selected
+                        const pieChartTitle = selectedMemberName ? `Sales by Member: ${selectedMemberName}` : 'Sales by Category';
+
                         categoryPieChart = new Chart(ctx1, {
-                            type: 'pie', // Chart type
+                            type: 'pie',
                             data: {
-                                labels: Object.keys(data.categoryQuantities), // X-axis labels: categories
+                                labels: Object.keys(data.categoryQuantities),
                                 datasets: [{
                                     label: 'Total Quantity by Category',
-                                    data: Object.values(data.categoryQuantities), // Y-axis data: quantities
+                                    data: Object.values(data.categoryQuantities).map(Number),
                                     backgroundColor: [
                                         'rgba(255, 99, 132, 0.2)',
                                         'rgba(54, 162, 235, 0.2)',
@@ -373,126 +443,144 @@ $conn->close(); // Close the database connection
                                 }]
                             },
                             options: {
-                                responsive: true,
+                                responsive: false,
+                                maintainAspectRatio: false,
                                 plugins: {
                                     legend: {
-                                        display: true, // Show legend
-                                        position: 'right', // Set position: 'top', 'left', 'bottom', 'right'
+                                        display: false,
+                                        position: 'right',
                                         labels: {
                                             font: {
-                                                size: 14, // Font size
-                                                family: 'Arial', // Font family
+                                                size: 14,
+                                                family: 'Arial',
                                             },
-                                            color: '#333', // Legend text color
-                                            padding: 20, // Spacing around labels
-                                            boxWidth: 20, // Width of the color box
-                                            boxHeight: 10, // Height of the color box (only in Chart.js 4.x)
+                                            color: '#333',
+                                            padding: 20,
+                                            boxWidth: 20,
+                                            boxHeight: 10,
+                                        }
+                                    },
+                                    datalabels: {
+                                        color: '#000',
+                                        formatter: (value, context) => {
+                                            const total = context.dataset.data.reduce((acc, data) => acc + data, 0);
+                                            const percentage = total ? ((value / total) * 100).toFixed(1) : 0;
+                                            return `${percentage}%`; // Display as a percentage
+                                        },
+                                        font: {
+                                            size: 12,
+                                            weight: 'bold'
                                         }
                                     }
                                 }
-                            }
+                            },
+                            plugins: [ChartDataLabels, {
+                                id: 'customLegend',
+                                beforeRender: function(chart) {
+                                    const quantities = chart.data.datasets[0].data;
+                                    const legendHtml = chart.data.labels.map((label, index) => {
+                                        return `<div style="display: flex; align-items: center;">
+                                            <span style="background-color: ${chart.data.datasets[0].backgroundColor[index]}; 
+                                                        width: 12px; height: 12px; display:inline-block; margin-right: 8px;"></span>
+                                            ${label}: ${quantities[index]}
+                                        </div>`;
+                                    }).join("");
+                                    document.getElementById('chartLegend').innerHTML = legendHtml;
+                                }
+                            }]
                         });
-                    })
-                    .catch(error => console.error('Error fetching category data:', error)); // Handle any errors
-            }
-
-            document.getElementById('salesPeriod').addEventListener('change', updateCategoryChart);
-
-            updateCategoryChart(); // Call it on page load
-        </script>
 
 
-        <script>
-            let salesChart; // Declare the variable to hold the chart instance
 
-            function toggleInputFields() {
-                const period = document.getElementById('salesPeriod').value;
-                document.getElementById('specificDate').style.display = period == 'specific_date' ? 'block' : 'none';
-                document.getElementById('specificMonth').style.display = period == 'specific_month' ? 'block' : 'none';
-            }
-
-            function updateChart() {
-                const period = document.getElementById('salesPeriod').value; // Get selected period
-                let url = `analytics.php?period=${period}`; // Base URL for fetching data
-                let selectedPeriodText = '';
-                let specificDate = null;
-                let specificMonth = null;
-
-                // Add specific date or month to URL if applicable
-                if (period === 'specific_date') {
-                    specificDate = document.getElementById('specificDate').value; // Get specific date
-                    url += `&specific_date=${specificDate}`; // Append to URL
-                    selectedPeriodText = `Sales on ${specificDate}`; // Update display text
-                } else if (period === 'specific_month') {
-                    specificMonth = document.getElementById('specificMonth').value; // Get specific month
-                    url += `&specific_month=${specificMonth}`; // Append to URL
-                    selectedPeriodText = `Sales in ${specificMonth}`; // Update display text
-                } else {
-                    selectedPeriodText = `Sales - ${period.charAt(0).toUpperCase() + period.slice(1)}`; // Format period text
-                }
-
-                // Set the selected period display text
-                document.getElementById('selectedPeriod2').innerText = selectedPeriodText;
-
-                // Fetch data from the PHP script
-                fetch(url)
-                    .then(response => response.json()) // Parse JSON response
-                    .then(data => {
+                        // Update Bar Chart for Top Items Sold
+                        const ctx2 = document.getElementById('salesChart').getContext('2d');
                         if (salesChart) {
                             salesChart.destroy(); // Destroy previous chart instance if it exists
                         }
 
-                        // Prepare data for the bar chart
-                        const itemNames = data.topItems.map(item => item.item_name); // Get item names for X-axis
-                        const quantities = data.topItems.map(item => item.total_quantity); // Get quantities for Y-axis
-
-                        // Create a new chart instance
-                        const ctx2 = document.getElementById('salesChart').getContext('2d');
-
-                        if (salesChart) {
-                            salesChart.destroy();
-                        }
+                        // Set the title for the bar chart similarly
+                        const barChartTitle = selectedMemberName ? `Sales by Member: ${selectedMemberName}` : 'Top Sold Items';
 
                         salesChart = new Chart(ctx2, {
-                            type: 'bar', // Chart type
+                            type: 'bar',
                             data: {
-                                labels: itemNames, // X-axis labels: item names
+                                labels: data.topItems.map(item => item.item_name),
                                 datasets: [{
-                                    label: 'Quantity Sold', // Dataset label
-                                    data: quantities, // Y-axis data: quantities sold
-                                    backgroundColor: 'rgba(75, 192, 192, 0.2)', // Bar color
-                                    borderColor: 'rgba(75, 192, 192, 1)', // Bar border color
-                                    borderWidth: 1 // Bar border width
+                                    label: 'Quantity Sold',
+                                    data: data.topItems.map(item => item.total_quantity),
+                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    borderWidth: 1
                                 }]
                             },
                             options: {
-                                responsive: true, // Responsive design
-                                maintainAspectRatio: false, // Maintain aspect ratio
+                                responsive: true,
+                                maintainAspectRatio: false,
                                 scales: {
                                     y: {
-                                        beginAtZero: true, // Start Y-axis at zero
+                                        beginAtZero: true,
                                         title: {
                                             display: true,
-                                            text: 'Quantity' // Y-axis title
+                                            text: 'Quantity'
                                         }
                                     },
                                     x: {
                                         title: {
                                             display: true,
-                                            text: 'Items' // X-axis title
+                                            text: 'Items'
                                         }
+                                    }
+                                },
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: barChartTitle
                                     }
                                 }
                             }
                         });
                     })
-                    .catch(error => console.error('Error fetching sales data:', error)); // Handle any errors
+                    .catch(error => console.error('Error fetching data:', error));
             }
 
-            document.getElementById('salesPeriod').addEventListener('change', updateChart);
+            // Event listeners for dropdowns
+            document.getElementById('salesPeriod').addEventListener('change', updateCharts);
+            document.getElementById('memberSelect').addEventListener('change', updateCharts); // Update charts on member change
 
-            updateChart();
+            // Load members on page load
+            function loadMembers() {
+                fetch('analytics.php?fetch_members=true')
+                    .then(response => response.json())
+                    .then(data => {
+                        const memberSelect = document.getElementById('memberSelect');
+                        memberSelect.innerHTML = ''; // Clear any existing options
+
+                        // Re-add the placeholder option
+                        const placeholderOption = document.createElement('option');
+                        placeholderOption.value = '';
+                        placeholderOption.textContent = 'Select a member';
+                        //placeholderOption.disabled = true; // Make it unselectable
+                        placeholderOption.selected = true; // Make it selected by default
+                        memberSelect.appendChild(placeholderOption);
+
+                        // Populate the member select with options from the fetched data
+                        data.forEach(member => {
+                            const option = document.createElement('option');
+                            option.value = member.id;
+                            option.textContent = member.name;
+                            memberSelect.appendChild(option);
+                        });
+
+                        // Call to update charts after loading members
+                        updateCharts();
+                    })
+                    .catch(error => console.error('Error fetching members:', error));
+            }
+
+            loadMembers(); // Call to load members on page load
         </script>
+
+
 </body>
 
 </html>
