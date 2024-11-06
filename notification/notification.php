@@ -92,26 +92,17 @@ if ($result && mysqli_num_rows($result) > 0) {
                     <span class="material-icons-sharp"> notifications </span>
                     <h3>Notifications</h3>
                 </a>
-                <a href="#">
+                <a href="../analytics/analytics.php">
                     <span class="material-icons-sharp"> insights </span>
                     <h3>Analytics</h3>
                 </a>
-                <a href="#">
+                <a href="../feedback/feedback.php">
                     <span class="material-icons-sharp"> feedback </span>
                     <h3>Feedback</h3>
                 </a>
-                <a href="#">
+                <a href="../login/logout.php">
                     <span class="material-icons-sharp"> logout </span>
                     <h3>Logout</h3>
-                </a>
-                <!----- EXTRA ----->
-                <a href="#">
-                    <span class="material-icons-sharp"> report_gmailerrorred </span>
-                    <h3>Reports</h3>
-                </a>
-                <a href="#">
-                    <span class="material-icons-sharp"> settings </span>
-                    <h3>Settings</h3>
                 </a>
             </div>
         </aside>

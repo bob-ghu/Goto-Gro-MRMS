@@ -10,7 +10,7 @@ if ($conn->connect_error) {
 }
 
 // Pagination settings
-$limit = 8; // Number of rows per page
+$limit = 9; // Number of rows per page
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1; // Get the current page number
 $offset = ($page - 1) * $limit; // Calculate the offset for SQL query
 
@@ -47,6 +47,24 @@ $unread = "SELECT message, notification_type FROM notifications WHERE is_read = 
 $notiCount = mysqli_query($conn, $unread);
 $query2 = "SELECT noti, created_at, notification_type FROM notifications WHERE is_read = 0 ORDER BY created_at DESC LIMIT 3";
 $recentNoti = mysqli_query($conn, $query2);
+
+// Total Sales
+$sales_count_query = "SELECT COUNT(*) as total_sales FROM sales";
+$sales_count_result = $conn->query($sales_count_query);
+$sales_count = $sales_count_result->fetch_assoc()['total_sales'];
+
+// Total Revenue
+$total_revenue_query = "SELECT SUM(Total_Price) as total_revenue FROM sales";
+$total_revenue_result = $conn->query($total_revenue_query);
+$total_revenue = $total_revenue_result->fetch_assoc()['total_revenue'];
+
+// Total Profit Calculation
+$total_profit_query = "
+    SELECT SUM((i.Selling_Price - i.Retail_Price) * s.Quantity) as total_profit
+    FROM sales s
+    JOIN inventory i ON s.Item_ID = i.Item_ID"; // Ensure Item_ID matches your database schema
+$total_profit_result = $conn->query($total_profit_query);
+$total_profit = $total_profit_result->fetch_assoc()['total_profit'];
 ?>
 
 <!DOCTYPE html>
@@ -103,26 +121,17 @@ $recentNoti = mysqli_query($conn, $query2);
             </span>
           <?php endif; ?>
         </a>
-        <a href="#">
+        <a href="../analytics/analytics.php">
           <span class="material-icons-sharp"> insights </span>
           <h3>Analytics</h3>
         </a>
-        <a href="#">
+        <a href="../feedback/feedback.php">
           <span class="material-icons-sharp"> feedback </span>
           <h3>Feedback</h3>
         </a>
-        <a href="#">
+        <a href="../login/logout.php">
           <span class="material-icons-sharp"> logout </span>
           <h3>Logout</h3>
-        </a>
-        <!----- EXTRA ----->
-        <a href="#">
-          <span class="material-icons-sharp"> report_gmailerrorred </span>
-          <h3>Reports</h3>
-        </a>
-        <a href="#">
-          <span class="material-icons-sharp"> settings </span>
-          <h3>Settings</h3>
         </a>
       </div>
     </aside>
@@ -131,69 +140,42 @@ $recentNoti = mysqli_query($conn, $query2);
       <h1>Sales</h1>
 
       <div class="insights">
-        <!-- SALES -->
-        <div class="sales">
-          <span class="material-icons-sharp"> analytics </span>
+        <!-- Total Sales -->
+        <div class="total-sales">
+          <span class="material-icons-sharp">shopping_cart</span>
           <div class="middle">
             <div class="left">
               <h3>Total Sales</h3>
-              <h1>$25,024</h1>
-            </div>
-            <div class="progress">
-              <svg>
-                <circle cx="38" cy="38" r="36"></circle>
-              </svg>
-              <div class="number">
-                <p>81%</p>
-              </div>
+              <h1 id="total-sales-count"><?php echo $sales_count; ?></h1> <!-- Dynamically set total sales count -->
             </div>
           </div>
-          <small class="text-muted"> Last 24 hours </small>
         </div>
 
-        <!-- EXPENSES -->
-        <div class="expenses">
-          <span class="material-icons-sharp"> bar_chart </span>
+        <!-- Total Revenue -->
+        <div class="total-revenue">
+          <span class="material-icons-sharp">attach_money</span>
           <div class="middle">
             <div class="left">
-              <h3>Total Expenses</h3>
-              <h1>$14,160</h1>
-            </div>
-            <div class="progress">
-              <svg>
-                <circle cx="38" cy="38" r="36"></circle>
-              </svg>
-              <div class="number">
-                <p>62%</p>
-              </div>
+              <h3>Total Revenue</h3>
+              <h1 id="total-revenue-amount">$ <?php echo number_format($total_revenue, 2); ?></h1> <!-- Format as currency -->
             </div>
           </div>
-          <small class="text-muted"> Last 24 hours </small>
         </div>
 
-        <!-- INCOME -->
-        <div class="income">
-          <span class="material-icons-sharp"> stacked_line_chart </span>
+        <!-- Total Profit -->
+        <div class="total-profit">
+          <span class="material-icons-sharp">monetization_on</span>
           <div class="middle">
             <div class="left">
-              <h3>Total Income</h3>
-              <h1>$10,864</h1>
-            </div>
-            <div class="progress">
-              <svg>
-                <circle cx="38" cy="38" r="36"></circle>
-              </svg>
-              <div class="number">
-                <p>44%</p>
-              </div>
+              <h3>Total Profit</h3>
+              <h1 id="total-profit-amount">$ <?php echo number_format($total_profit, 2); ?></h1> <!-- Format as currency -->
             </div>
           </div>
-          <small class="text-muted"> Last 24 hours </small>
         </div>
       </div>
 
       <div class="sales-container">
-        <!--Add Members Form-->
+
         <div class="sales-detail">
           <div class="sales-detail-header">
             <h2>Sales' Detail</h2>
@@ -379,6 +361,18 @@ $recentNoti = mysqli_query($conn, $query2);
             echo '<div class="item info"><div class="icon"><span class="material-icons-sharp">info</span></div>No new notifications.</div>';
           }
           ?>
+        </a>
+      </div>
+
+      <div class="report-generate">
+        <h2>Export Sales's CSV</h2>
+        <a href="export_sales.php" class="download-button">
+          <div class="report-generate-button">
+            <!-- Button to generate CSV report -->
+            <span class="material-icons-sharp">print</span>
+            <!-- Button to generate CSV report -->
+            Download Sales Report as CSV
+          </div>
         </a>
       </div>
     </div>
@@ -719,7 +713,6 @@ $recentNoti = mysqli_query($conn, $query2);
   <script src="../index/index.js"></script>
   <script src="./salesform.js"></script>
   <script src="./sales.js"></script>
-  <script src="./salestable.js"></script>
 
   </div>
 </body>

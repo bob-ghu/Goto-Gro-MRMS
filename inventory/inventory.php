@@ -12,7 +12,7 @@ if ($conn->connect_error) {
 }
 
 // Pagination setup
-$limit = 8;
+$limit = 7;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1; // Get current page or set default to 1
 $offset = ($page - 1) * $limit;
 
@@ -39,6 +39,19 @@ $unread = "SELECT message, notification_type FROM notifications WHERE is_read = 
 $notiCount = mysqli_query($conn, $unread);
 $query2 = "SELECT noti, created_at, notification_type FROM notifications WHERE is_read = 0 ORDER BY created_at DESC LIMIT 3";
 $result2 = mysqli_query($conn, $query2);
+
+$category_count_query = "SELECT Category, COUNT(*) as count FROM inventory GROUP BY Category";
+$category_count_result = $conn->query($category_count_query);
+
+$categories = [];
+$counts = [];
+
+if ($category_count_result->num_rows > 0) {
+    while ($row = $category_count_result->fetch_assoc()) {
+        $categories[] = $row['Category'];
+        $counts[] = (int)$row['count'];
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -101,30 +114,19 @@ $result2 = mysqli_query($conn, $query2);
                     <?php endif; ?>
                 </a>
 
-                <a href="#">
+                <a href="../analytics/analytics.php">
                     <span class="material-icons-sharp"> insights </span>
                     <h3>Analytics</h3>
                 </a>
 
-                <a href="#">
+                <a href="../feedback/feedback.php">
                     <span class="material-icons-sharp"> feedback </span>
                     <h3>Feedback</h3>
                 </a>
 
-                <a href="#">
+                <a href="../login/logout.php">
                     <span class="material-icons-sharp"> logout </span>
                     <h3>Logout</h3>
-                </a>
-
-                <!----- EXTRA ----->
-                <a href="#">
-                    <span class="material-icons-sharp"> report_gmailerrorred </span>
-                    <h3>Reports</h3>
-                </a>
-
-                <a href="#">
-                    <span class="material-icons-sharp"> settings </span>
-                    <h3>Settings</h3>
                 </a>
             </div>
         </aside>
@@ -133,68 +135,61 @@ $result2 = mysqli_query($conn, $query2);
             <h1>Inventory</h1>
 
             <div class="insights">
-                <!----- Start Tab 1 ----->
-                <div class="sales">
-                    <span class="material-icons-sharp"> analytics </span>
+                <!----- Start Total Inventory Tab ----->
+                <div class="total-inventory">
+                    <span class="material-icons-sharp"> inventory_2 </span>
                     <div class="middle">
                         <div class="left">
-                            <h3>Total Sales</h3>
-                            <h1>$25,024</h1>
-                        </div>
-                        <div class="progress">
-                            <svg>
-                                <circle cx="38" cy="38" r="36"></circle>
-                            </svg>
-                            <div class="number">
-                                <p>81%</p>
-                            </div>
+                            <h3>Total Inventory</h3>
+                            <h1><?php echo $total_inventory; ?></h1>
                         </div>
                     </div>
-                    <small class="text-muted"> Last 24 hours </small>
+                    <small class="text-muted"> Total number of items in inventory </small>
                 </div>
-                <!----- End Tab 1 ----->
+                <!----- End Total Inventory Tab ----->
 
-                <!----- Start Tab 2 ----->
-                <div class="expenses">
-                    <span class="material-icons-sharp"> bar_chart </span>
+                <!----- Start Category Pie Chart Tab ----->
+                <div class="pie-chart">
+                    <span class="material-icons-sharp">data_usage</span>
                     <div class="middle">
-                        <div class="left">
-                            <h3>Total Expenses</h3>
-                            <h1>$14,160</h1>
+                        <div class="label">
+                            <h3>Item Categories Distribution</h3>
                         </div>
-                        <div class="progress">
-                            <svg>
-                                <circle cx="38" cy="38" r="36"></circle>
-                            </svg>
-                            <div class="number">
-                                <p>62%</p>
-                            </div>
+                        <!-- Pie Chart Canvas -->
+                        <div class="pie-chart-container">
+                            <canvas id="categoryPieChart"></canvas>
                         </div>
                     </div>
-                    <small class="text-muted"> Last 24 hours </small>
                 </div>
-                <!----- End Tab 2 ----->
+                <!----- End Category Pie Chart Tab ----->
 
-                <!----- Start Tab 3 ----->
-                <div class="income">
-                    <span class="material-icons-sharp"> stacked_line_chart </span>
+                <!----- Start Lowest Quantity Items Tab ----->
+                <div class="lowest-quantity">
+                    <span class="material-icons-sharp"> low_priority </span>
                     <div class="middle">
                         <div class="left">
-                            <h3>Total Income</h3>
-                            <h1>$10,864</h1>
-                        </div>
-                        <div class="progress">
-                            <svg>
-                                <circle cx="38" cy="38" r="36"></circle>
-                            </svg>
-                            <div class="number">
-                                <p>44%</p>
-                            </div>
+                            <h3>Top 3 Items with Lowest Quantity</h3>
+                            <ul>
+                                <?php
+                                // Fetch the top 3 items with the lowest quantity
+                                $lowest_query = "SELECT Name, Quantity FROM inventory ORDER BY Quantity ASC LIMIT 3";
+                                $lowest_result = $conn->query($lowest_query);
+
+                                if ($lowest_result->num_rows > 0) {
+
+                                    while ($row = $lowest_result->fetch_assoc()) {
+                                        echo "<li> {$row['Name']} - Quantity: {$row['Quantity']}</li>";
+                                    }
+                                } else {
+                                    echo "<li>No items found.</li>";
+                                }
+                                ?>
+                            </ul>
                         </div>
                     </div>
-                    <small class="text-muted"> Last 24 hours </small>
                 </div>
-                <!----- End Tab 3 ----->
+                <!----- End Lowest Quantity Items Tab ----->
+
             </div>
 
             <div class="inventory-container">
@@ -385,6 +380,18 @@ $result2 = mysqli_query($conn, $query2);
                     ?>
                 </a>
             </div>
+
+            <div class="report-generate">
+                <h2>Export Inventory's CSV</h2>
+                <a href="export_inventory.php" class="download-button">
+                    <div class="report-generate-button">
+                        <!-- Button to generate CSV report -->
+                        <span class="material-icons-sharp">print</span>
+                        <!-- Button to generate CSV report -->
+                        Download Inventory Report as CSV
+                    </div>
+                </a>
+            </div>
         </div>
 
         <!-- Modal Overlay (Form is moved outside the container) -->
@@ -425,21 +432,21 @@ $result2 = mysqli_query($conn, $query2);
                     <div class="input-box">
                         <label>Supplier</label>
                         <div class="addsupplier-box">
-                        <input list="supplier" id="supplier_input" name="supplier_input" placeholder="Enter or Select Supplier" value="" autocomplete="off" required >
+                            <input list="supplier" id="supplier_input" name="supplier_input" placeholder="Enter or Select Supplier" value="" autocomplete="off" required>
                             <datalist name="supplier" id="supplier" required>
                                 <?php
-                                    $sql = "SELECT DISTINCT Supplier FROM inventory";
+                                $sql = "SELECT DISTINCT Supplier FROM inventory";
 
-                                    $result = $conn->query($sql);
+                                $result = $conn->query($sql);
 
-                                    // Check if any results were found
-                                    if ($result->num_rows > 0) {
-                                        while ($row = $result->fetch_assoc()) {
-                                            echo "<option value=\"" . $row['Supplier'] . "\">";
-                                        }
-                                    } else {
-                                        echo "No results found.";
+                                // Check if any results were found
+                                if ($result->num_rows > 0) {
+                                    while ($row = $result->fetch_assoc()) {
+                                        echo "<option value=\"" . $row['Supplier'] . "\">";
                                     }
+                                } else {
+                                    echo "No results found.";
+                                }
                                 ?>
                             </datalist>
                         </div>
@@ -449,21 +456,22 @@ $result2 = mysqli_query($conn, $query2);
                     <div class="input-box">
                         <label>Category</label>
                         <div class="addcategory-box">
-                        <input list="category" id="category_input" name="category_input" placeholder="Enter or Select Category" value="" autocomplete="off" required >
+
+                            <input list="category" id="category_input" name="category_input" placeholder="Enter or Select Category" value="" autocomplete="off" required>
                             <datalist name="category" id="category" required>
                                 <?php
-                                    $sql = "SELECT DISTINCT Category FROM inventory";
+                                $sql = "SELECT DISTINCT Category FROM inventory";
 
-                                    $result = $conn->query($sql);
+                                $result = $conn->query($sql);
 
-                                    // Check if any results were found
-                                    if ($result->num_rows > 0) {
-                                        while ($row = $result->fetch_assoc()) {
-                                            echo "<option value=\"" . $row['Category'] . "\">";
-                                        }
-                                    } else {
-                                        echo "No results found.";
+                                // Check if any results were found
+                                if ($result->num_rows > 0) {
+                                    while ($row = $result->fetch_assoc()) {
+                                        echo "<option value=\"" . $row['Category'] . "\">";
                                     }
+                                } else {
+                                    echo "No results found.";
+                                }
                                 ?>
                             </datalist>
                         </div>
@@ -524,21 +532,21 @@ $result2 = mysqli_query($conn, $query2);
                     <div class="input-box">
                         <label>Supplier</label>
                         <div class="editsupplier-box">
-                        <input list="supplier" id="supplier_input_edit" name="supplier_input_edit" placeholder="Enter or Select Supplier" value="" autocomplete="off" required >
+                            <input list="supplier" id="supplier_input_edit" name="supplier_input_edit" placeholder="Enter or Select Supplier" value="" autocomplete="off" required>
                             <datalist name="supplier_edit" id="supplier_edit" required>
                                 <?php
-                                    $sql = "SELECT DISTINCT Supplier FROM inventory";
+                                $sql = "SELECT DISTINCT Supplier FROM inventory";
 
-                                    $result = $conn->query($sql);
+                                $result = $conn->query($sql);
 
-                                    // Check if any results were found
-                                    if ($result->num_rows > 0) {
-                                        while ($row = $result->fetch_assoc()) {
-                                            echo "<option value=\"" . $row['Supplier'] . "\">";
-                                        }
-                                    } else {
-                                        echo "No results found.";
+                                // Check if any results were found
+                                if ($result->num_rows > 0) {
+                                    while ($row = $result->fetch_assoc()) {
+                                        echo "<option value=\"" . $row['Supplier'] . "\">";
                                     }
+                                } else {
+                                    echo "No results found.";
+                                }
                                 ?>
                             </datalist>
                         </div>
@@ -548,21 +556,21 @@ $result2 = mysqli_query($conn, $query2);
                     <div class="input-box">
                         <label>Category</label>
                         <div class="editcategory-box">
-                        <input list="category" id="category_input_edit" name="category_input_edit" placeholder="Enter or Select Category" autocomplete="off" required >
+                            <input list="category" id="category_input_edit" name="category_input_edit" placeholder="Enter or Select Category" autocomplete="off" required>
                             <datalist name="category_edit" id="category_edit" required>
                                 <?php
-                                    $sql = "SELECT DISTINCT Category FROM inventory";
+                                $sql = "SELECT DISTINCT Category FROM inventory";
 
-                                    $result = $conn->query($sql);
+                                $result = $conn->query($sql);
 
-                                    // Check if any results were found
-                                    if ($result->num_rows > 0) {
-                                        while ($row = $result->fetch_assoc()) {
-                                            echo "<option value=\"" . $row['Category'] . "\">";
-                                        }
-                                    } else {
-                                        echo "No results found.";
+                                // Check if any results were found
+                                if ($result->num_rows > 0) {
+                                    while ($row = $result->fetch_assoc()) {
+                                        echo "<option value=\"" . $row['Category'] . "\">";
                                     }
+                                } else {
+                                    echo "No results found.";
+                                }
                                 ?>
                             </datalist>
                         </div>
@@ -589,6 +597,94 @@ $result2 = mysqli_query($conn, $query2);
         <script src="../index/index.js"></script>
         <script src="./inventory.js"></script>
         <script src="./inventoryform.js"></script>
+        <!-- Include Chart.js library -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                // Data from PHP
+                const categories = <?php echo json_encode($categories); ?>;
+                const counts = <?php echo json_encode($counts); ?>;
+                const totalItems = counts.reduce((sum, count) => sum + count, 0); // Calculate total count of all categories
+
+                // Create the pie chart
+                const ctx = document.getElementById('categoryPieChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: categories.map((category, index) => {
+                            const percentage = ((counts[index] / totalItems) * 100).toFixed(1); // Calculate and format percentage
+                            return `${category} (${counts[index]})`; // Legend shows count and percentage
+                        }),
+                        datasets: [{
+                            data: counts,
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.2)',
+                                'rgba(54, 162, 235, 0.2)',
+                                'rgba(255, 206, 86, 0.2)',
+                                'rgba(75, 192, 192, 0.2)',
+                                'rgba(153, 102, 255, 0.2)',
+                                'rgba(255, 159, 64, 0.2)',
+                                'rgba(201, 203, 207, 0.2)' // New color
+                            ],
+                            borderColor: [
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(153, 102, 255, 1)',
+                                'rgba(255, 159, 64, 1)',
+                                'rgba(201, 203, 207, 1)' // New color
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                align: 'center',
+                                labels: {
+                                    boxWidth: 15,
+                                    padding: 10,
+                                },
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    title: function() {
+                                        return ''; // Return empty for the title
+                                    },
+                                    label: function(tooltipItem) {
+                                        const label = tooltipItem.label || '';
+                                        const value = tooltipItem.raw || 0;
+                                        return label; // Show name and count
+                                    }
+                                }
+                            },
+                            datalabels: {
+                                color: '#000',
+                                font: {
+                                    size: 11
+                                },
+                                formatter: (value, context) => {
+                                    const percentage = ((value / totalItems) * 100).toFixed(1);
+                                    return `${percentage}%`; // Display percentage inside the pie slices
+                                }
+                            }
+                        },
+                        layout: {
+                            padding: {
+                                bottom: 20
+                            }
+                        }
+                    },
+                    plugins: [ChartDataLabels] // Activate the datalabels plugin
+                });
+            });
+        </script>
+
 
         <script>
             // JavaScript function to send AJAX request to PHP
@@ -623,6 +719,7 @@ $result2 = mysqli_query($conn, $query2);
             }
         </script>
     </div>
+
 </body>
 
 </html>

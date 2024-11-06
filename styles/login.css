@@ -1,0 +1,120 @@
+/* ==================== Login Form Start =================== */
+
+
+.login-form-container {
+  position: relative;
+  max-width: 30%; /* Max width similar to member form */
+  width: 100%;
+  background: #fff;
+  padding: 25px;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  margin: auto; /* Center the form on the page */
+  margin-top: 10%;
+}
+
+.login-form-container header {
+  font-size: 1.5rem;
+  color: #333;
+  font-weight: 500;
+  text-align: center;
+}
+
+.login-form legend {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: #333;
+  text-align: center;
+  margin-bottom: 15px; /* Add some space below the legend */
+}
+
+.input-box {
+  width: 95%;
+  margin-top: 20px;
+}
+
+.input-box label {
+  color: #333;
+  display: block; /* Ensures label is above the input */
+  margin-bottom: 5px; /* Space between label and input */
+}
+
+.input-box input {
+  position: relative;
+  height: 50px;
+  width: 100%;
+  outline: none;
+  font-size: 1rem;
+  color: #707070;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0 15px;
+  transition: border 0.2s ease; /* Add a transition for focus effect */
+}
+
+.input-box input:focus {
+  border: 1px solid rgb(130, 106, 251); /* Change border color on focus */
+  box-shadow: 0 0 5px rgba(130, 106, 251, 0.5); /* Light shadow on focus */
+}
+
+.hint {
+  font-size: 0.8rem;
+  color: #707070; /* Hint color */
+  margin-top: 5px; /* Space between input and hint */
+}
+
+.login-submit {
+  margin-top: 30px; /* Space above the button */
+  text-align: center; /* Center the button */
+}
+
+.login-submit button {
+  height: 55px;
+  width: 100%;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 400;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: rgb(130, 106, 251);
+}
+
+.login-submit button:hover {
+  background: rgb(88, 56, 250);
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 500px) {
+  .login-form-container {
+    padding: 15px; /* Adjust padding for smaller screens */
+  }
+
+  .input-box input {
+    height: 45px; /* Smaller input height */
+  }
+
+  .login-submit button {
+    height: 50px; /* Adjust button height */
+  }
+}
+
+/* Styles for the error message */
+.error {
+  color: red;
+  font-weight: bold;
+  margin-top: 10px;
+  text-align: center; /* Center the text */
+}
+
+/* Styles for the timer section */
+.form-timer {
+  background-color: #f8d7da; /* Light red background for warning */
+  border: 1px solid #f5c6cb; /* Red border */
+  color: #721c24; /* Dark red text */
+  padding: 10px;
+  border-radius: 5px; /* Rounded corners */
+  margin-top: 15px;
+  text-align: center; /* Center the text */
+}
+/* ==================== Login Form End =================== */
