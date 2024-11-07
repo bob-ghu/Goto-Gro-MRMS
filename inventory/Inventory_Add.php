@@ -72,8 +72,8 @@
         }
 
         // Supplier Name
-        if (isset($_POST["supplier"])) {
-            $Supplier = $_POST["supplier"];
+        if (isset($_POST["supplier_input"])) {
+            $Supplier = $_POST["supplier_input"];
             $Supplier = sanitise_input($Supplier);
         }
         if ($Supplier == "") {
@@ -84,32 +84,16 @@
         }
 
         // Category
-        if (isset($_POST["category"])) {
-            $CategoryValue = $_POST["category"];  // Get the raw category value
-            $CategoryValue = sanitise_input($CategoryValue);  // Sanitize the input
-        
-            // Create a mapping of values to cleaner text
-            $categories = [
-                'fruits_and_vegetables' => 'Fruits and Vegetables',
-                'meat_and_poultry' => 'Meat and Poultry',
-                'seafood' => 'Seafood',
-                'beverages' => 'Beverages',
-                'snacks' => 'Snacks',
-                'frozen_foods' => 'Frozen Foods',
-                'bakery' => 'Bakery',
-                'canned_goods' => 'Canned Goods',
-                'dry_goods' => 'Dry Goods',
-                'personal_care' => 'Personal Care',
-                'household_supplies' => 'Household Supplies',
-                'condiments_and_spices' => 'Condiments and Spices',
-            ];
-        
-            // Get the cleaner text for the selected category
-            $Category = isset($categories[$CategoryValue]) ? $categories[$CategoryValue] : null;
+        if (isset($_POST["category_input"])) {
+            $Category = $_POST["category_input"];
+            $Category = sanitise_input($Category);
         }        
 
         if ($Category == "") {
             $errMsg .= "<p>You must select a category.</p>";
+        }
+        else if (!preg_match("/^[a-zA-Z ]*$/", $Category)) {
+            $errMsg .= "<p>Only letters are allowed in the category.</p>";
         }
 
         // Brand Name

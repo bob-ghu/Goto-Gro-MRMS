@@ -1,0 +1,147 @@
+/* ==================== Login Form Start =================== */
+
+/* Import Google font - Poppins */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap");
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  background-color: #f0f2f5;
+}
+
+.login-form-container {
+  position: relative;
+  max-width: 400px;
+  background: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  min-width: 30%;
+  margin-left: 35%;
+  margin-top: 8%;
+}
+
+.login-form-container h1 {
+  font-size: 2rem;
+  color: #333;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.login-form .input-box {
+  width: 100%;
+  margin-top: 20px;
+  text-align: left;
+}
+
+.input-box label {
+  color: #333;
+  font-size: 0.9rem;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.login-form .input-box input {
+  height: 50px;
+  width: 100%;
+  outline: none;
+  font-size: 1rem;
+  color: #707070;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0 15px;
+  transition: border 0.3s ease;
+}
+
+.input-box input:focus {
+  border-color: rgb(130, 106, 251);
+  box-shadow: 0 1px 5px rgba(130, 106, 251, 0.2);
+}
+
+.login-form .text-muted {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.login-form button {
+  height: 55px;
+  width: 100%;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-top: 25px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  background: rgb(130, 106, 251);
+  border-radius: 6px;
+}
+
+.login-form button:hover {
+  background: rgb(88, 56, 250);
+}
+
+/* ==================== Login Form End =================== */
+
+/* ==================== Login Feedback Start =================== */
+
+/* Centered form timer styling */
+.form-timer {
+  width: 30%;
+  margin-top: 2rem;
+  padding: 15px;
+  background: #ffebeb;
+  border: 1px solid #e0b3b3;
+  border-radius: 6px;
+  color: #b30000;
+  font-weight: 500;
+  font-size: 1rem;
+  text-align: center;
+  flex-direction: column;
+  align-items: center;
+  margin-left: 35%;
+}
+
+.form-timer p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #b30000;
+}
+
+.form-timer span {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #d9534f;
+  margin: 5px 0; /* Adds spacing between the elements */
+}
+
+
+.error {
+  margin-top: 2rem;
+  color: #d9534f;
+  background-color: #fbe2e2;
+  padding: 10px;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 0.9rem;
+  border: 1px solid #e0b3b3;
+  width: 30%;
+  margin-left: 35%;
+}
+
+.error::before {
+  content: "⚠ ";
+  font-size: 1rem;
+  margin-right: 5px;
+  color: #d9534f;
+}
+
+/* ==================== Login Feedback End =================== */

@@ -5,7 +5,7 @@ function validateAdd() { // Function to validate all data
     var result = true; // Initialise result as true
 
     // Full Name
-    var fullname = document.getElementById("fullname").value;
+    var fullname = document.getElementById("fullname").value.trim();
     var fullname_error = document.getElementById("fullname_error");
     fullname_error.innerHTML = "";
     if (fullname == "") {
@@ -23,7 +23,7 @@ function validateAdd() { // Function to validate all data
     }
 
     // Email
-    var email = document.getElementById("email").value;
+    var email = document.getElementById("email").value.trim();
     var email_error = document.getElementById("email_error");
     email_error.innerHTML = "";
     if (email == "") {
@@ -41,7 +41,7 @@ function validateAdd() { // Function to validate all data
     }
 
     // Phone Number
-    var phonenum = document.getElementById("phonenum").value;
+    var phonenum = document.getElementById("phonenum").value.trim();
     var phonenum_error = document.getElementById("phonenum_error");
     phonenum_error.innerHTML = "";
     if (phonenum == "") {
@@ -59,7 +59,7 @@ function validateAdd() { // Function to validate all data
     }
 
     // Date of Birth
-    var dob = document.getElementById("dob").value;
+    var dob = document.getElementById("dob").value.trim();
     var dob_error = document.getElementById("dob_error");
     dob_error.innerHTML = "";
     if (!dob.match(/^(0[1-9]|[12][0-9]|3[01])[\/\-](0[1-9]|1[0-2])[\/\-]\d{4}$/)) {
@@ -91,7 +91,7 @@ function validateAdd() { // Function to validate all data
     }
 
     // Street Address
-    var streetaddress = document.getElementById("streetaddress").value;
+    var streetaddress = document.getElementById("streetaddress").value.trim();
     var streetaddress_error = document.getElementById("streetaddress_error");
     streetaddress_error.innerHTML = "";
     if (streetaddress == "") {
@@ -125,8 +125,26 @@ function validateAdd() { // Function to validate all data
         });
     }
 
+    // State
+    var state = document.getElementById("state").value.trim();
+    var state_error = document.getElementById("state_error");
+    state_error.innerHTML = "";
+    if (state == "") {
+        state_error.innerHTML = "Please enter your state.\n";
+        document.getElementById("state").style.borderColor = "red";
+        result = false;
+    }
+    else if (!state.match(/^[a-zA-Z ]{1,50}$/)) {
+        state_error.innerHTML = "State is invalid.\n";
+        document.getElementById("state").style.borderColor = "red";
+        result = false;
+    }
+    else {
+        document.getElementById("state").style.borderColor = "green";
+    }
+
     // City
-    var city = document.getElementById("city").value;
+    var city = document.getElementById("city").value.trim();
     var city_error = document.getElementById("city_error");
     city_error.innerHTML = "";
     if (city == "") {
@@ -144,7 +162,7 @@ function validateAdd() { // Function to validate all data
     }
 
     // Postal Code
-    var postalcode = document.getElementById("postalcode").value;
+    var postalcode = document.getElementById("postalcode").value.trim();
     var postalcode_error = document.getElementById("postalcode_error");
     postalcode_error.innerHTML = "";
     if (postalcode == "") {
@@ -169,7 +187,7 @@ function validateEdit() { // Function to validate all data
     var result = true; // Initialise result as true
 
     // Full Name
-    var fullname = document.getElementById("fullname_edit").value;
+    var fullname = document.getElementById("fullname_edit").value.trim();
     var fullname_error = document.getElementById("fullname_edit_error");
     fullname_error.innerHTML = "";
     if (fullname == "") {
@@ -187,7 +205,7 @@ function validateEdit() { // Function to validate all data
     }
 
     // Email
-    var email = document.getElementById("email_edit").value;
+    var email = document.getElementById("email_edit").value.trim();
     var email_error = document.getElementById("email_edit_error");
     email_error.innerHTML = "";
     if (email == "") {
@@ -205,7 +223,7 @@ function validateEdit() { // Function to validate all data
     }
 
     // Phone Number
-    var phonenum = document.getElementById("phonenum_edit").value;
+    var phonenum = document.getElementById("phonenum_edit").value.trim();
     var phonenum_error = document.getElementById("phonenum_edit_error");
     phonenum_error.innerHTML = "";
     if (phonenum == "") {
@@ -223,7 +241,7 @@ function validateEdit() { // Function to validate all data
     }
 
     // Date of Birth
-    var dob = document.getElementById("dob_edit").value;
+    var dob = document.getElementById("dob_edit").value.trim();
     var dob_error = document.getElementById("dob_edit_error");
     dob_error.innerHTML = "";
     if (!dob.match(/^(0[1-9]|[12][0-9]|3[01])[\/\-](0[1-9]|1[0-2])[\/\-]\d{4}$/)) {
@@ -255,7 +273,7 @@ function validateEdit() { // Function to validate all data
     }
 
     // Street Address
-    var streetaddress = document.getElementById("streetaddress_edit").value;
+    var streetaddress = document.getElementById("streetaddress_edit").value.trim();
     var streetaddress_error = document.getElementById("streetaddress_edit_error");
     streetaddress_error.innerHTML = "";
     if (streetaddress == "") {
@@ -289,8 +307,26 @@ function validateEdit() { // Function to validate all data
         });
     }
 
+    // State
+    var state = document.getElementById("state_edit").value.trim();
+    var state_error = document.getElementById("state_edit_error");
+    state_error.innerHTML = "";
+    if (state == "") {
+        state_error.innerHTML = "Please enter your state.\n";
+        document.getElementById("state_edit").style.borderColor = "red";
+        result = false;
+    }
+    else if (!state.match(/^[a-zA-Z ]{1,50}$/)) {
+        state_error.innerHTML = "State is invalid.\n";
+        document.getElementById("state_edit").style.borderColor = "red";
+        result = false;
+    }
+    else {
+        document.getElementById("state_edit").style.borderColor = "green";
+    }
+
     // City
-    var city = document.getElementById("city_edit").value;
+    var city = document.getElementById("city_edit").value.trim();
     var city_error = document.getElementById("city_edit_error");
     city_error.innerHTML = "";
     if (city == "") {
@@ -308,7 +344,7 @@ function validateEdit() { // Function to validate all data
     }
 
     // Postal Code
-    var postalcode = document.getElementById("postalcode_edit").value;
+    var postalcode = document.getElementById("postalcode_edit").value.trim();
     var postalcode_error = document.getElementById("postalcode_edit_error");
     postalcode_error.innerHTML = "";
     if (postalcode == "") {

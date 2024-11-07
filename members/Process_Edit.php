@@ -25,11 +25,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $gender = $conn->real_escape_string($_POST['gender']);
     $streetaddress = $conn->real_escape_string($_POST['streetaddress']);
     $city = $conn->real_escape_string($_POST['city']);
+    $state = $conn->real_escape_string($_POST['state']);
     $country = $conn->real_escape_string($_POST['country']);
     $postalcode = $conn->real_escape_string($_POST['postalcode']);
     
     // Validate the input (you can add more validation as needed)
-    if (empty($fullname) || empty($email) || empty($phonenum) || empty($dob) || empty($streetaddress) || empty($city) || empty($country) || empty($postalcode)) {
+    if (empty($fullname) || empty($email) || empty($phonenum) || empty($dob) || empty($streetaddress) || empty($country) || empty($state) || empty($city) ||  empty($postalcode)) {
         $_SESSION['error'] = "All fields are required.";
         header("Location: ./members.php");
         exit();
@@ -43,8 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 DOB = '$dob', 
                 Gender = '$gender', 
                 Street_Address = '$streetaddress', 
+                Country = '$country',
                 City = '$city', 
-                Country = '$country', 
+                State = '$state', 
                 Postal_Code = '$postalcode' 
             WHERE Member_ID = '$member_id'";
 

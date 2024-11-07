@@ -22,8 +22,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $quantity = $conn->real_escape_string($_POST['quantity_edit']);
     $retailprice = $conn->real_escape_string($_POST['retail_price_edit']);
     $sellingprice = $conn->real_escape_string($_POST['selling_price_edit']);
-    $supplier = $conn->real_escape_string($_POST['supplier_edit']);
-    $category = $conn->real_escape_string($_POST['category_edit']);
+    $supplier = $conn->real_escape_string($_POST['supplier_input_edit']);
+    $category = $conn->real_escape_string($_POST['category_input_edit']);
     $brand = $conn->real_escape_string($_POST['brand_edit']);
     $reorder = $conn->real_escape_string($_POST['reorder_edit']);
 

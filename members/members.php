@@ -10,7 +10,7 @@ if ($conn->connect_error) {
 }
 
 // Pagination setup
-$limit = 8;
+$limit = 7;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1; // Get current page or default to 1
 $offset = ($page - 1) * $limit;
 
@@ -39,6 +39,14 @@ $unread = "SELECT message, notification_type FROM notifications WHERE is_read = 
 $notiCount = mysqli_query($conn, $unread);
 $query2 = "SELECT noti, created_at, notification_type FROM notifications WHERE is_read = 0 ORDER BY created_at DESC LIMIT 3";
 $result2 = mysqli_query($conn, $query2);
+
+// Fetch active member count
+$sql_active_count = "SELECT COUNT(*) AS active_total FROM members WHERE status = 'active'";
+$active_result = $conn->query($sql_active_count);
+$active_count = $active_result->fetch_assoc()['active_total'];
+
+// Calculate percentage of active members
+$active_percentage = ($total_members > 0) ? ($active_count / $total_members) * 100 : 0;
 ?>
 
 <!DOCTYPE html>
@@ -101,30 +109,19 @@ $result2 = mysqli_query($conn, $query2);
                     <?php endif; ?>
                 </a>
 
-                <a href="#">
+                <a href="../analytics/analytics.php">
                     <span class="material-icons-sharp"> insights </span>
                     <h3>Analytics</h3>
                 </a>
 
-                <a href="#">
+                <a href="../feedback/feedback.php">
                     <span class="material-icons-sharp"> feedback </span>
                     <h3>Feedback</h3>
                 </a>
 
-                <a href="#">
+                <a href="../login/logout.php">
                     <span class="material-icons-sharp"> logout </span>
                     <h3>Logout</h3>
-                </a>
-
-                <!----- EXTRA ----->
-                <a href="#">
-                    <span class="material-icons-sharp"> report_gmailerrorred </span>
-                    <h3>Reports</h3>
-                </a>
-
-                <a href="#">
-                    <span class="material-icons-sharp"> settings </span>
-                    <h3>Settings</h3>
                 </a>
             </div>
         </aside>
@@ -133,68 +130,48 @@ $result2 = mysqli_query($conn, $query2);
             <h1>Members</h1>
 
             <div class="insights">
-                <!----- Start Tab 1 ----->
-                <div class="sales">
-                    <span class="material-icons-sharp"> analytics </span>
+                <!-- Total Members -->
+                <div class="total-members">
+                    <span class="material-icons-sharp">groups</span>
                     <div class="middle">
                         <div class="left">
-                            <h3>Total Sales</h3>
-                            <h1>$25,024</h1>
+                            <h3>Total Members</h3>
+                            <h1 id="total-members-count"><?php echo $total_members; ?></h1> <!-- Dynamically set total members count -->
                         </div>
                         <div class="progress">
-                            <svg>
-                                <circle cx="38" cy="38" r="36"></circle>
-                            </svg>
-                            <div class="number">
-                                <p>81%</p>
-                            </div>
                         </div>
                     </div>
-                    <small class="text-muted"> Last 24 hours </small>
-                </div>
-                <!----- End Tab 1 ----->
 
-                <!----- Start Tab 2 ----->
-                <div class="expenses">
-                    <span class="material-icons-sharp"> bar_chart </span>
-                    <div class="middle">
-                        <div class="left">
-                            <h3>Total Expenses</h3>
-                            <h1>$14,160</h1>
-                        </div>
-                        <div class="progress">
-                            <svg>
-                                <circle cx="38" cy="38" r="36"></circle>
-                            </svg>
-                            <div class="number">
-                                <p>62%</p>
-                            </div>
-                        </div>
-                    </div>
-                    <small class="text-muted"> Last 24 hours </small>
                 </div>
-                <!----- End Tab 2 ----->
 
-                <!----- Start Tab 3 ----->
-                <div class="income">
-                    <span class="material-icons-sharp"> stacked_line_chart </span>
+                <!-- Active Members -->
+                <div class="active-members">
+                    <span class="material-icons-sharp">data_usage</span>
                     <div class="middle">
                         <div class="left">
-                            <h3>Total Income</h3>
-                            <h1>$10,864</h1>
+                            <h3>Active Members</h3>
+                            <h1><?php echo $active_count; ?> &nbsp;Out of&nbsp; <?php echo $total_members; ?></h1>
                         </div>
                         <div class="progress">
-                            <svg>
-                                <circle cx="38" cy="38" r="36"></circle>
-                            </svg>
-                            <div class="number">
-                                <p>44%</p>
+                            <div class="pie-chart-container">
+                                <canvas id="membersPieChart"></canvas>
+                                <div class="legend">
+                                    <div class="legend-item">
+                                        <div class="active"></div>
+                                        <h4>Active</h4>
+                                    </div>
+                                    <div class="legend-item">
+                                        <div class="inactive"></div>
+                                        <h4>Inactive</h4>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                        <!-- Pie Chart for Active and Inactive Members -->
                     </div>
-                    <small class="text-muted"> Last 24 hours </small>
+                    <small class="text-muted">Active Members | Total Members</small>
                 </div>
-                <!----- End Tab 3 ----->
+
             </div>
 
             <div class="member-container">
@@ -217,8 +194,10 @@ $result2 = mysqli_query($conn, $query2);
                                         <option value="Gender">Gender</option>
                                         <option value="Street_Address">Street Address</option>
                                         <option value="Country">Country</option>
+                                        <option value="State">State</option>
                                         <option value="City">City</option>
                                         <option value="Postal_Code">Postal Code</option>
+                                        <option value="Status">Status</option>
                                     </select>
                                 </div>
 
@@ -249,8 +228,11 @@ $result2 = mysqli_query($conn, $query2);
                                 <th>Gender</th>
                                 <th>Street Address</th>
                                 <th>Country</th>
+                                <th>State</th>
                                 <th>City</th>
                                 <th>Postal Code</th>
+                                <th>Status</th>
+                                <th class="edit-btn"></th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -280,9 +262,21 @@ $result2 = mysqli_query($conn, $query2);
                                         echo "<td>" . htmlspecialchars($row['Gender']) . "</td>";
                                         echo "<td>" . htmlspecialchars($row['Street_Address']) . "</td>";
                                         echo "<td>" . htmlspecialchars($row['Country']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row['State']) . "</td>";
                                         echo "<td>" . htmlspecialchars($row['City']) . "</td>";
                                         echo "<td>" . htmlspecialchars($row['Postal_Code']) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row['Status']) . "</td>";
                                         echo "<td><a class='edit-member' onclick=\"requestMemberInfo(this)\" data-member-id='" . htmlspecialchars($row["Member_ID"]) . "'>Edit</a></td>";
+                                        echo "<td>";
+                                        echo "<form action='./Process_Delete.php' method='POST' style='display:inline;'>
+                                            <input type='hidden' name='Member_ID' value='" . htmlspecialchars($row["Member_ID"]) . "'>";
+
+                                        if ($row['Status'] === 'inactive') {
+                                            echo "<a><button onclick='return confirm(\"Are you sure you want to reactivate this member?\");' class='member-status'>Activate</button></a>";
+                                        } else {
+                                            echo "<a><button onclick='return confirm(\"Are you sure you want to mark this member as inactive?\");' class='member-status'>Deactivate</button></a>";
+                                        }
+                                        echo "</form></td>";
                                         echo "</tr>";
                                     }
                                 } else {
@@ -292,19 +286,35 @@ $result2 = mysqli_query($conn, $query2);
                                 if ($result->num_rows > 0) {
                                     while ($row = $result->fetch_assoc()) {
                                         echo "<tr>";
-                                        echo "<td>" . $row["Member_ID"] . "</td>";
-                                        echo "<td>" . $row["Full_Name"] . "</td>";
-                                        echo "<td>" . $row["Email_Address"] . "</td>";
-                                        echo "<td>" . $row["Phone_Number"] . "</td>";
-                                        echo "<td>" . $row["DOB"] . "</td>";
-                                        echo "<td>" . $row["Gender"] . "</td>";
-                                        echo "<td>" . $row["Street_Address"] . "</td>";
-                                        echo "<td>" . $row["Country"] . "</td>";
-                                        echo "<td>" . $row["City"] . "</td>";
-                                        echo "<td>" . $row["Postal_Code"] . "</td>";
-                                        echo "<td><a class='edit-member' onclick=\"requestMemberInfo(this)\" data-member-id='" . $row["Member_ID"] . "'>Edit</a></td>";
+                                        echo "<td>" . htmlspecialchars($row["Member_ID"]) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row["Full_Name"]) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row["Email_Address"]) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row["Phone_Number"]) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row["DOB"]) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row["Gender"]) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row["Street_Address"]) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row["Country"]) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row["State"]) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row["City"]) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row["Postal_Code"]) . "</td>";
+                                        echo "<td>" . htmlspecialchars($row['Status']) . "</td>";
+
+
+                                        echo "<td><a class='edit-member' onclick=\"requestMemberInfo(this)\" data-member-id='" . htmlspecialchars($row["Member_ID"]) . "'>Edit</a>" . "</td>";
+                                        echo "<td>";
+                                        echo "<form action='./Process_Delete.php' method='POST' style='display:inline;'>
+                                            <input type='hidden' name='Member_ID' value='" . htmlspecialchars($row["Member_ID"]) . "'>";
+
+                                        if ($row['Status'] === 'inactive') {
+                                            echo "<a><button onclick='return confirm(\"Are you sure you want to reactivate this member?\");' class='member-status'>Activate</button></a>";
+                                        } else {
+                                            echo "<a><button onclick='return confirm(\"Are you sure you want to mark this member as inactive?\");' class='member-status'>Deactivate</button></a>";
+                                        }
+                                        echo "</form></td>";
                                         echo "</tr>";
                                     }
+                                } else {
+                                    echo "No results found.";
                                 }
                             }
                             ?>
@@ -329,7 +339,7 @@ $result2 = mysqli_query($conn, $query2);
                             <a href="?page=<?php echo $page + 1; ?>" class="pagination-next-btn"><span class="material-icons-sharp">arrow_forward_ios</span></a>
                         <?php endif; ?>
                     </div>
-                    
+
                 </div>
             </div>
         </main>
@@ -388,6 +398,18 @@ $result2 = mysqli_query($conn, $query2);
                     ?>
                 </a>
             </div>
+
+            <div class="report-generate">
+                <h2>Export Member's CSV</h2>
+                <a href="export_members.php" class="download-button">
+                    <div class="report-generate-button">
+                        <!-- Button to generate CSV report -->
+                        <span class="material-icons-sharp">print</span>
+                        Download Member Report as CSV
+                    </div>
+                </a>
+            </div>
+
         </div>
 
         <!-- Modal Overlay (Form is moved outside the container) -->
@@ -402,7 +424,7 @@ $result2 = mysqli_query($conn, $query2);
                     <!--Full Name-->
                     <div class="input-box">
                         <label>Full Name</label>
-                        <input type="text" name="fullname" id="fullname" maxlength="40" pattern="^[a-zA-Z ]+$"
+                        <input type="text" name="fullname" id="fullname" maxlength="50" pattern="^[a-zA-Z ]+$"
                             placeholder="Example: John Doe" required />
                         <section id="fullname_error" class="error"></section>
                     </div>
@@ -463,40 +485,52 @@ $result2 = mysqli_query($conn, $query2);
 
                         <!--Street Address-->
                         <label>Address</label>
-                        <input type="text" name="streetaddress" id="streetaddress" maxlength="40" size="40"
+                        <input type="text" name="streetaddress" id="streetaddress" maxlength="50" size="50"
                             pattern="[a-zA-Z ]{1,40}" placeholder="Enter your street address" required />
                         <section id="streetaddress_error" class="error"></section>
 
                     </div>
                     <div class="input-box">
-                        <!--Country-->
-                        <label>Country</label>
-                        <div class="select-box addcountry-box">
-                            <select name="country" id="country" required>
-                                <option value="">Select your country</option>
-                                <option value="canada">Canada</option>
-                                <option value="usa">USA</option>
-                                <option value="japan">Japan</option>
-                                <option value="india">India</option>
-                                <option value="malaysia">Malaysia</option>
-                                <option value="singapore">Singapore</option>
-                                <option value="southkorea">South Korea</option>
-                                <option value="myanmar">Myanmar</option>
-                                <option value="vietnam">Vietnam</option>
-                                <option value="brunei">Brunei</option>
-                                <option value="china">China</option>
-                                <option value="sweden">Sweden</option>
-                                <option value="france">France</option>
-                                <option value="germany">Germany</option>
-                            </select>
+                        <div class="column">
+                            <div class="input-box">
+                                <label>Country</label>
+                                <div class="select-box addcountry-box">
+                                    <select name="country" id="country" required>
+                                        <option value="">Select your country</option>
+                                        <option value="canada">Canada</option>
+                                        <option value="usa">USA</option>
+                                        <option value="japan">Japan</option>
+                                        <option value="india">India</option>
+                                        <option value="malaysia">Malaysia</option>
+                                        <option value="singapore">Singapore</option>
+                                        <option value="southkorea">South Korea</option>
+                                        <option value="myanmar">Myanmar</option>
+                                        <option value="vietnam">Vietnam</option>
+                                        <option value="brunei">Brunei</option>
+                                        <option value="china">China</option>
+                                        <option value="sweden">Sweden</option>
+                                        <option value="france">France</option>
+                                        <option value="germany">Germany</option>
+                                    </select>
+                                </div>
+                                <section id="country_error" class="error"></section>
+                            </div>
+                            <!--Country-->
+
+
+                            <div class="input-box">
+                                <label>State</label>
+                                <input type="text" name="state" id="state" maxlength="50" size="50" placeholder="Example: Selangor" pattern="[a-zA-Z ]{1,40}" required />
+                                <section id="state_error" class="error"></section>
+                            </div>
                         </div>
-                        <section id="country_error" class="error"></section>
+
 
                         <div class="column">
                             <!--City-->
                             <div class="input-box">
                                 <label>City</label>
-                                <input type="text" name="city" id="city" maxlength="40" size="40" pattern="[a-zA-Z ]{1,40}" placeholder="Example: Kuala Lumpur" required />
+                                <input type="text" name="city" id="city" maxlength="50" size="50" pattern="[a-zA-Z ]{1,40}" placeholder="Example: Kuala Lumpur" required />
                                 <section id="city_error" class="error"></section>
                             </div>
                             <!--Postcode-->
@@ -586,14 +620,24 @@ $result2 = mysqli_query($conn, $query2);
 
                         <br>
 
-                        <!--Country-->
-                        <label>Country</label>
-                        <div class="select-box editcountry-box">
-                            <select name="country" id="country_edit" required>
-                                <!--A select box of countries will be dynamically inserted here-->
-                            </select>
+                        <div class="column">
+                            <div class="input-box">
+                                <!--Country-->
+                                <label>Country</label>
+                                <div class="select-box editcountry-box">
+                                    <select name="country" id="country_edit" required>
+                                        <!--A select box of countries will be dynamically inserted here-->
+                                    </select>
+                                </div>
+                                <section id="country_edit_error" class="error"></section>
+                            </div>
+                            <div class="input-box">
+                                <label>State</label>
+                                <input type="text" name="state" id="state_edit" maxlength="50" size="50" pattern="[a-zA-Z ]{1,50}" placeholder="Example: Selangor" value="" required />
+                                <section id="state_edit_error" class="error"></section>
+                            </div>
                         </div>
-                        <section id="country_edit_error" class="error"></section>
+
                         <div class="column">
                             <!--City-->
                             <div class="input-box">
@@ -617,6 +661,55 @@ $result2 = mysqli_query($conn, $query2);
         <script src="../index/index.js"></script>
         <script src="./memberform.js"></script>
         <script src="./members.js"></script>
+        <!-- Include Chart.js -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            const activeCount = <?php echo $active_count; ?>;
+            const inactiveCount = <?php echo $total_members - $active_count; ?>;
+
+            const ctx = document.getElementById('membersPieChart').getContext('2d');
+            const membersPieChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Active', 'Inactive'],
+                    datasets: [{
+                        data: [activeCount, inactiveCount],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(255, 99, 132, 0.2)',
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 99, 132, 1)',
+                        ],
+                        borderWidth: 1,
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            display: false // Hide the legend
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    const label = tooltipItem.label || '';
+                                    const value = tooltipItem.raw || 0;
+                                    return label + ': ' + value;
+                                }
+                            },
+                            // Custom tooltip styles
+                            bodyFont: {
+                                size: 11, // Change this value for the desired font size
+                            },
+                            titleFont: {
+                                size: 0 // Optional: change title font size if applicable
+                            },
+                        }
+                    }
+                }
+            });
+        </script>
 
         <script>
             // JavaScript function to send AJAX request to PHP
@@ -676,6 +769,7 @@ $result2 = mysqli_query($conn, $query2);
                             document.getElementById(gender + '_edit').checked = true;
                             document.getElementById('streetaddress_edit').value = data.Street_Address;
                             document.getElementById('country_edit').innerHTML = selectBox;
+                            document.getElementById('state_edit').value = data.State;
                             document.getElementById('city_edit').value = data.City;
                             document.getElementById('postalcode_edit').value = data.Postal_Code;
                         }
@@ -686,6 +780,7 @@ $result2 = mysqli_query($conn, $query2);
             }
         </script>
     </div>
+
 </body>
 
 </html>

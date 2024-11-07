@@ -20,6 +20,7 @@
             'Gender' => $row['Gender'],
             'Street_Address' => $row['Street_Address'],
             'Country' => $row['Country'],
+            'State' => $row['State'],
             'City' => $row['City'],
             'Postal_Code' => $row['Postal_Code']
         ]);

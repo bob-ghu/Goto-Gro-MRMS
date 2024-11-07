@@ -1,6 +1,9 @@
 <?php
-session_cache_limiter('nocache');
-require('../database/database_check.php');
+session_start();
+if (!isset($_SESSION['loggedin'])) {
+    header('Location: ../login/login.php');
+    exit;
+}
 
 require_once('../database/settings.php'); // Include your database settings
 
@@ -41,6 +44,7 @@ $salesResult = $conn->query($salesQuery);
 
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
   <link rel="stylesheet" href="../styles/style.css" />
+  <link rel="stylesheet" href="../styles/index.css" />
 </head>
 
 <body>
@@ -85,26 +89,17 @@ $salesResult = $conn->query($salesQuery);
             </span>
           <?php endif; ?>
         </a>
-        <a href="#">
+        <a href="../analytics/analytics.php">
           <span class="material-icons-sharp"> insights </span>
           <h3>Analytics</h3>
         </a>
-        <a href="#">
+        <a href="../feedback/feedback.php">
           <span class="material-icons-sharp"> feedback </span>
           <h3>Feedback</h3>
         </a>
-        <a href="#">
+        <a href="../login/logout.php">
           <span class="material-icons-sharp"> logout </span>
           <h3>Logout</h3>
-        </a>
-        <!----- EXTRA ----->
-        <a href="#">
-          <span class="material-icons-sharp"> report_gmailerrorred </span>
-          <h3>Reports</h3>
-        </a>
-        <a href="#">
-          <span class="material-icons-sharp"> settings </span>
-          <h3>Settings</h3>
         </a>
       </div>
     </aside>
@@ -173,6 +168,23 @@ $salesResult = $conn->query($salesQuery);
           <small class="text-muted"> Last 24 hours </small>
         </div>
       </div>
+
+      <div class="recent-orders">
+          <h2></h2>
+          <table id="recent-orders--table">
+            <thead>
+              <tr>
+                <th>Product Name</th>
+                <th>Product Number</th>
+                <th>Payment</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <!-- Add tbody here | JS insertion -->
+          </table>
+          <a href="#">Show All</a>
+        </div>
 
 
     </main>

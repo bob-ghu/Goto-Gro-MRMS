@@ -5,7 +5,7 @@ function validateAdd() { // Function to validate all data
     var result = true; // Initialise result as true
 
     // Stock Name
-    var stockname = document.getElementById("name").value;
+    var stockname = document.getElementById("name").value.trim();
     var stockname_error = document.getElementById("name_error");
     stockname_error.innerHTML = "";
     if (stockname == "") {
@@ -77,29 +77,42 @@ function validateAdd() { // Function to validate all data
     }
 
     // Supplier Name
-    var supplier = document.getElementById("supplier").value;
+    var supplier = document.getElementById("supplier_input").value.trim();
     var supplier_error = document.getElementById("supplier_error");
     supplier_error.innerHTML = "";
     if (supplier == "") {
-        supplier_error.innerHTML = "Please enter the supplier's name.\n";
-        document.getElementById("supplier").style.borderColor = "red";
+        supplier_error.innerHTML = "Please enter or select a supplier's name.\n";
+        Array.from(document.getElementsByClassName("addsupplier-box")).forEach(function(element) {
+            element.style.border = "1px solid red";
+        });
         result = false;
     }
     else if (!supplier.match(/^[a-zA-Z ]+$/)) {
         supplier_error.innerHTML = "Invalid supplier name. Please use letters only.\n";
-        document.getElementById("supplier").style.borderColor = "red";
+        Array.from(document.getElementsByClassName("addsupplier-box")).forEach(function(element) {
+            element.style.border = "1px solid red";
+        });
         result = false;
     }
     else {
-        document.getElementById("supplier").style.borderColor = "green";
+        Array.from(document.getElementsByClassName("addsupplier-box")).forEach(function(element) {
+            element.style.border = "1px solid green";
+        });
     }
 
     // Category
-    var category = document.getElementById("category").value;
+    var category = document.getElementById("category_input").value.trim();
     var category_error = document.getElementById("category_error");
     category_error.innerHTML = "";
     if (category == "") {
-        category_error.innerHTML = "You must select a category.\n";
+        category_error.innerHTML = "Please enter or select a category.\n";
+        Array.from(document.getElementsByClassName("addcategory-box")).forEach(function(element) {
+            element.style.border = "1px solid red";
+        });
+        result = false;
+    }
+    else if (!category.match(/^[a-zA-Z ]+$/)) {
+        category_error.innerHTML = "Invalid category name. Please use letters only.\n";
         Array.from(document.getElementsByClassName("addcategory-box")).forEach(function(element) {
             element.style.border = "1px solid red";
         });
@@ -112,7 +125,7 @@ function validateAdd() { // Function to validate all data
     }
 
     // Brand Name
-    var brand = document.getElementById("brand").value;
+    var brand = document.getElementById("brand").value.trim();
     var brand_error = document.getElementById("brand_error");
     brand_error.innerHTML = "";
     if (brand == "") {
@@ -155,7 +168,7 @@ function validateEdit() { // Function to validate all data
     var result = true; // Initialise result as true
 
     // Stock Name
-    var stockname = document.getElementById("name_edit").value;
+    var stockname = document.getElementById("name_edit").value.trim();
     var stockname_error = document.getElementById("name_edit_error");
     stockname_error.innerHTML = "";
     if (stockname == "") {
@@ -227,30 +240,43 @@ function validateEdit() { // Function to validate all data
     }
 
     // Supplier Name
-    var supplier = document.getElementById("supplier_edit").value;
+    var supplier = document.getElementById("supplier_input_edit").value.trim();
     var supplier_error = document.getElementById("supplier_edit_error");
     supplier_error.innerHTML = "";
     if (supplier == "") {
         supplier_error.innerHTML = "Please enter the supplier's name.\n";
-        document.getElementById("supplier_edit").style.borderColor = "red";
+        Array.from(document.getElementsByClassName("editsupplier-box")).forEach(function(element) {
+            element.style.border = "1px solid red";
+        });
         result = false;
     }
     else if (!supplier.match(/^[a-zA-Z ]+$/)) {
         supplier_error.innerHTML = "Invalid supplier name. Please use letters only.\n";
-        document.getElementById("supplier_edit").style.borderColor = "red";
+        Array.from(document.getElementsByClassName("editsupplier-box")).forEach(function(element) {
+            element.style.border = "1px solid red";
+        });
         result = false;
     }
     else {
-        document.getElementById("supplier_edit").style.borderColor = "green";
+        Array.from(document.getElementsByClassName("editsupplier-box")).forEach(function(element) {
+            element.style.border = "1px solid green";
+        });
     }
 
     // Category
-    var category = document.getElementById("category_edit").value;
+    var category = document.getElementById("category_input_edit").value.trim();
     var category_error = document.getElementById("category_edit_error");
     category_error.innerHTML = "";
     if (category == "") {
-        category_error.innerHTML = "You must select a category.\n";
+        category_error.innerHTML = "You must enter or select a category.\n";
         Array.from(document.getElementsByClassName("editcategory-box")).forEach(function(element) {
+            element.style.border = "1px solid red";
+        });
+        result = false;
+    }
+    else if (!category.match(/^[a-zA-Z ]+$/)) {
+        category_error.innerHTML = "Invalid category name. Please use letters only.\n";
+        Array.from(document.getElementsByClassName("addcategory-box")).forEach(function(element) {
             element.style.border = "1px solid red";
         });
         result = false;
@@ -262,7 +288,7 @@ function validateEdit() { // Function to validate all data
     }
 
     // Brand Name
-    var brand = document.getElementById("brand_edit").value;
+    var brand = document.getElementById("brand_edit").value.trim();
     var brand_error = document.getElementById("brand_edit_error");
     brand_error.innerHTML = "";
     if (brand == "") {

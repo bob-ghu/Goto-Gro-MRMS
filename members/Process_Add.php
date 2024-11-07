@@ -105,6 +105,19 @@
             $errMsg .= "<p>You must select a country.</p>";
         }
 
+        // State
+        if (isset($_POST["state"])) {
+            $State = $_POST["state"];
+            $State = sanitise_input($State);
+        }
+
+        if ($State == "") {
+            $errMsg .= "<p>You must enter your state.</p>";
+        }
+        else if (!preg_match("/^[a-zA-Z ]{1,50}$/", $State)) {
+            $errMsg .= "<p>State is invalid.</p>";
+        }
+
         // City
         if (isset($_POST["city"])) {
             $City = $_POST["city"];
@@ -137,8 +150,8 @@
         }
         else {
             // Insert
-            $sql = "INSERT INTO members (Full_name, Email_Address, Phone_Number, DOB, Gender, Street_Address, City, Country, Postal_Code) 
-            VALUES ('$Full_Name', '$Email_Address', '$Phone_Number', '$DOB', '$Gender', '$Street_Address', '$City', '$Country', '$Postal_Code')";
+            $sql = "INSERT INTO members (Full_name, Email_Address, Phone_Number, DOB, Gender, Street_Address, City, State, Country, Postal_Code) 
+            VALUES ('$Full_Name', '$Email_Address', '$Phone_Number', '$DOB', '$Gender', '$Street_Address', '$City', '$State', '$Country', '$Postal_Code')";
 
             $Member_ID = mysqli_insert_id($conn);
             $query = mysqli_query($conn, $sql);
