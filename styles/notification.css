@@ -16,6 +16,7 @@ main .notification-detail table {
     text-align: center;
     box-shadow: var(--box-shadow);
     transition: all 300ms ease;
+    margin-bottom: 1rem;
 }
 
 main .notification-detail table:hover {

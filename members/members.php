@@ -1,4 +1,9 @@
 <?php
+session_start();
+if (!isset($_SESSION['loggedin'])) {
+    header('Location: ../login/login.php');
+    exit;
+}
 require_once('../database/settings.php'); // Include your database settings
 
 // Create a connection
@@ -11,21 +16,6 @@ if ($conn->connect_error) {
 
 // Pagination setup
 $limit = 7;
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1; // Get current page or default to 1
-$offset = ($page - 1) * $limit;
-
-// Check if the "show all" parameter is set
-if (isset($_GET['show']) && $_GET['show'] === 'all') {
-    // SQL query to fetch all member details
-    $sql = "SELECT * FROM members";
-    $show_all = true;
-} else {
-    // SQL query to fetch limited member details
-    $sql = "SELECT * FROM members LIMIT $limit OFFSET $offset";
-    $show_all = false;
-}
-
-$result = $conn->query($sql);
 
 // Get total number of records for pagination calculation
 $sql_count = "SELECT COUNT(*) AS total FROM members";
@@ -33,6 +23,16 @@ $count_result = $conn->query($sql_count);
 $row_count = $count_result->fetch_assoc();
 $total_members = $row_count['total'];
 $total_pages = ceil($total_members / $limit); // Total pages based on records
+
+if (isset($_POST['page_input']) && $_POST['page_input'] <= $total_pages) {
+    $page = $_POST['page_input'];
+} else {
+    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1; // Get current page or default to 1
+}
+$offset = ($page - 1) * $limit;
+
+$sql = "SELECT * FROM members LIMIT $limit OFFSET $offset";
+$result = $conn->query($sql);
 
 // Notification Count
 $unread = "SELECT message, notification_type FROM notifications WHERE is_read = 0";
@@ -47,6 +47,21 @@ $active_count = $active_result->fetch_assoc()['active_total'];
 
 // Calculate percentage of active members
 $active_percentage = ($total_members > 0) ? ($active_count / $total_members) * 100 : 0;
+
+// Get the current year
+$year = date('Y');
+
+// Query to get the top 5 most popular items based on the total quantity sold in the current year
+$popularItemQuery = "
+    SELECT i.Name, SUM(s.Quantity) AS total_sold
+    FROM sales s
+    JOIN inventory i ON s.Item_ID = i.Item_ID
+    WHERE YEAR(Sale_Date) = '$year'
+    GROUP BY s.Item_ID
+    ORDER BY total_sold DESC
+    LIMIT 3";  // Adjust the limit if you want more or fewer items
+
+$popularItemResult = $conn->query($popularItemQuery);
 ?>
 
 <!DOCTYPE html>
@@ -186,24 +201,60 @@ $active_percentage = ($total_members > 0) ? ($active_count / $total_members) * 1
                                 <div class="search-select-box">
                                     <p>Search by:</p>
                                     <select name="search-column" id="search-column">
-                                        <option value="Member_ID">Member ID</option>
-                                        <option value="Full_Name">Full Name</option>
-                                        <option value="Email_Address">Email</option>
-                                        <option value="Phone_Number">Phone</option>
-                                        <option value="DOB">Date of Birth</option>
-                                        <option value="Gender">Gender</option>
-                                        <option value="Street_Address">Street Address</option>
-                                        <option value="Country">Country</option>
-                                        <option value="State">State</option>
-                                        <option value="City">City</option>
-                                        <option value="Postal_Code">Postal Code</option>
-                                        <option value="Status">Status</option>
+                                        <?php
+                                        $excludedOption = "";
+                                        if (isset($_GET['search-column'])) {
+                                            echo "<option value=\"" . $_GET['search-column'] . "\">";
+                                            if ($_GET['search-column'] == "DOB") {
+                                                echo "Date of Birth";
+                                            } else {
+                                                echo str_replace('_', ' ', $_GET['search-column']);
+                                            }
+                                            echo "</option>";
+                                            $excludedOption = $_GET['search-column'];
+                                        }
+
+                                        $options = [
+                                            "Member_ID",
+                                            "Full_Name",
+                                            "Email_Address",
+                                            "Phone_Number",
+                                            "DOB",
+                                            "Gender",
+                                            "Street_Address",
+                                            "Country",
+                                            "State",
+                                            "City",
+                                            "Postal_Code",
+                                            "Status"
+                                        ];
+
+                                        foreach ($options as $option) {
+                                            $optionDisplay = "";
+                                            if ($option == "DOB") {
+                                                $optionDisplay = "Date of Birth";
+                                            } else {
+                                                $optionDisplay = str_replace('_', ' ', $option);
+                                            }
+                                            // Exclude the specified country
+                                            if (strcmp($option, $excludedOption) !== 0) {
+                                                echo '<option value="' . $option . '">' . $optionDisplay . '</option>';
+                                            }
+                                        }
+                                        ?>
                                     </select>
                                 </div>
 
                                 <div class="search-container">
-                                    <input type="text" name="search_bar" id="search_bar" maxlength="40" placeholder="Search" />
+                                    <input type="text" name="search_bar" id="search_bar" maxlength="40" placeholder="Search" value="<?php
+                                                                                                                                    if (isset($_GET['search_bar'])) {
+                                                                                                                                        echo $_GET['search_bar'];
+                                                                                                                                    } ?>" />
                                     <button type="submit"><span class="material-icons-sharp">search</span></button>
+                                </div>
+
+                                <div id="current-filter">
+                                    <a><button type="button" onclick="window.location.href=window.location.pathname;">Clear Filter</button></a>
                                 </div>
 
                             </div>
@@ -252,6 +303,7 @@ $active_percentage = ($total_members > 0) ? ($active_count / $total_members) * 1
 
                                 // Check if any results were found
                                 if ($result_search->num_rows > 0) {
+                                    $total_pages = 1;
                                     while ($row = $result_search->fetch_assoc()) {
                                         echo "<tr>";
                                         echo "<td>" . htmlspecialchars($row['Member_ID']) . "</td>";
@@ -329,7 +381,9 @@ $active_percentage = ($total_members > 0) ? ($active_count / $total_members) * 1
                         <?php endif; ?>
 
                         Page
-                        <?php echo $page; ?> of
+                        <?php echo "<form id=\"page-form\" method=\"post\" action=\"./members.php\" class=\"page-form\" novalidate=\"novalidate\">
+                                        <input type=\"text\" name=\"page_input\" id=\"page_input\" size=\"1\" value=" . $page . " /> 
+                                    </form>"; ?> of
                         <?php
                         // If there are no pages, display "1" as the default total
                         echo ($total_pages < 1) ? "1" : $total_pages;
@@ -351,11 +405,11 @@ $active_percentage = ($total_members > 0) ? ($active_count / $total_members) * 1
                 </button>
                 <div class="profile">
                     <div class="info">
-                        <p>Hey, <b>Meow</b></p>
-                        <small class="text-muted">Admin</small>
+                        <p>Hey, <b><?php echo $_SESSION["Username"] ?></b></p>
+                        <small class="text-muted"><?php echo $_SESSION["Role"] ?></small>
                     </div>
                     <div class="profile-photo">
-                        <img src="../images/profile-1.jpg" alt="Profile Picture" />
+                        <img src="<?php echo $_SESSION["Picture"] ?>" alt="Profile Picture" />
                     </div>
                 </div>
             </div>
@@ -397,6 +451,51 @@ $active_percentage = ($total_members > 0) ? ($active_count / $total_members) * 1
                     }
                     ?>
                 </a>
+            </div>
+
+            <div class="popular-item-table">
+                <h2>Top Selling Items This Year</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th> <!-- New column for ranking -->
+                            <th>Item</th>
+                            <th>Quantity Sold</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        if ($popularItemResult && $popularItemResult->num_rows > 0):
+                            $rank = 1; // Initialize a counter for ranking
+                            while ($row = $popularItemResult->fetch_assoc()):
+                        ?>
+                                <tr>
+                                    <td data-label="Rank">
+                                        <?php
+
+                                        // Add a crown for top 3 items
+                                        if ($rank == 1) {
+                                            echo '<span class="mdi--crown gold"></span>'; // Crown emoji for rank 1
+                                        } elseif ($rank == 2) {
+                                            echo '<span class="mdi--crown silver"></span>'; // Crown emoji for rank 2
+                                        } elseif ($rank == 3) {
+                                            echo '<span class="mdi--crown bronze"></span>'; // Crown emoji for rank 3
+                                        }
+                                        ?>
+                                    </td>
+                                    <td data-label="Item"><?php echo htmlspecialchars($row['Name']); ?></td>
+                                    <td data-label="Quantity Sold"><?php echo htmlspecialchars($row['total_sold']); ?></td>
+                                </tr>
+                                <?php $rank++; // Increment the rank 
+                                ?>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="3">No sales data available for this year.</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
             </div>
 
             <div class="report-generate">

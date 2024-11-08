@@ -1,4 +1,9 @@
 <?php
+session_start();
+if (!isset($_SESSION['loggedin'])) {
+    header('Location: ../login/login.php');
+    exit;
+}
 if (!isset($_POST["member_id"])) {
     header("Location: ./sales.php");
     exit;

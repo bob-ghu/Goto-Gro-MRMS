@@ -205,13 +205,20 @@ CREATE TABLE IF NOT EXISTS staff (
     Username VARCHAR(50) NOT NULL,
 	Email_Address VARCHAR(50) NOT NULL,
 	Password VARCHAR(30) NOT NULL,
-	Role VARCHAR(10) NOT NULL
+	Role VARCHAR(10) NOT NULL,
+    Profile_Picture VARCHAR(100) NOT NULL
 );
 
-INSERT INTO staff (Full_Name, Username, Email_Address, Password, Role)
+INSERT INTO staff (Full_Name, Username, Email_Address, Password, Role, Profile_Picture)
 VALUES
-('Siew Yat Fei', 'Bob', 'siew@gmail.com', 'Password', 'Manager'),
-('Goh Mun Hong', 'Hong', 'hong@gmail.com', 'munhong', 'Staff'),
-('Chan Chun Xian', 'CCX', 'ccx@gmail.com', 'chunxian', 'Staff'),
-('Samuel Ho Shenhao', 'Sam', 'sam@gmail.com', 'hohoho', 'Staff'),
-('Guest', 'Guest', 'guest@gmail.com', 'guess', 'Staff');
+('Siew Yat Fei', 'Bob', 'siew@gmail.com', 'Password', 'Manager', '../images/Bob.jpg'),
+('Goh Mun Hong', 'Hong', 'hong@gmail.com', 'munhong', 'Staff', '../images/Hong.jpg'),
+('Chan Chun Xian', 'CCX', 'ccx@gmail.com', 'chunxian', 'Staff', '../images/CCX.jpg'),
+('Samuel Ho Shenhao', 'Sam', 'sam@gmail.com', 'hohoho', 'Staff', '../images/Sam.jpg'),
+('Guest', 'Guest', 'guest@gmail.com', 'guess', 'Staff', '../images/Guest.jpg');
+
+CREATE TABLE IF NOT EXISTS loginhistory (
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+    Staff_ID INT,
+    LoginTime DATETIME DEFAULT CURRENT_TIMESTAMP
+);

@@ -1,6 +1,9 @@
 <?php
-// Start the session
 session_start();
+if (!isset($_SESSION['loggedin'])) {
+    header('Location: ../login/login.php');
+    exit;
+}
 
 // Include database connection settings
 require_once('../database/settings.php');

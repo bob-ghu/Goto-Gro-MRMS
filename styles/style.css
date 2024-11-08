@@ -298,6 +298,39 @@ aside .sidebar .message-count {
   font-weight: 600;
 }
 
+/* Style for the current-filter container */
+#current-filter {
+  text-align: right; /* Align the button to the right */
+  margin-top: 1rem; /* Add some space at the top */
+  margin-right: 20px; /* Add some space to the right */
+
+}
+
+/* Style for the button */
+#current-filter button {
+  background-color: var(--color-danger); /* Red background color */
+  color: white; /* White text color */
+  border: none; /* Remove default border */
+  padding: 10px 20px; /* Add padding to the button */
+  font-size: 14px; /* Set font size */
+  cursor: pointer; /* Change cursor to pointer */
+  border-radius: 5px; /* Rounded corners */
+  display: inline-block; /* Make sure the button is on a single line */
+  white-space: nowrap; /* Prevent text from wrapping onto a new line */
+  transition: background-color 0.3s ease; /* Smooth transition for hover effect */
+  font-weight: 600;
+}
+
+/* Button hover effect */
+#current-filter button:hover {
+  background-color: #d32f2f; /* Darker red on hover */
+}
+
+/* Optional: Style the anchor link */
+#current-filter a {
+  text-decoration: none; /* Remove underline */
+}
+
 
 
 /* START MAIN */
@@ -372,41 +405,7 @@ main .date input[type="date"] {
   text-align: right;
 }
 
-/* START RECENT SALES */
-.right .recent-sales {
-  margin-top: 1rem;
-}
 
-.right .recent-sales h2 {
-  margin-bottom: 0.8rem;
-}
-
-.right .recent-sales .updates {
-  background: var(--color-white);
-  padding: 1.5rem;
-  border-radius: var(--card-border-radius);
-  box-shadow: var(--box-shadow);
-  transition: all 300ms ease;
-  margin-bottom: 1rem;
-}
-
-.right .recent-sales .updates:hover {
-  cursor: pointer;
-  box-shadow: none;
-}
-
-.right .recent-sales .updates .update {
-  display: grid;
-  grid-template-columns: 2.6rem auto;
-  gap: 1rem;
-}
-
-.right .recent-sales .updates .message {
-  white-space: nowrap;
-  /* Prevent wrapping */
-}
-
-/* END RECENT UPDATES */
 
 /* START SIDE NOTIFICATION */
 .right .notification-section {
@@ -677,6 +676,25 @@ main .date input[type="date"] {
   color: (--color-primary);
 }
 
+/* Input box styling */
+#pagination #page_input {
+  width: 30px;
+  padding: 2px;
+  margin: 0 10px;
+  font-size: 16px;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  outline: none; /* Remove the default focus outline */
+  transition: border-color 0.3s ease;
+}
+
+/* Input box focus effect */
+#pagination #page_input:focus {
+  border-color: #007BFF; /* Blue border when focused */
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Add a subtle glow */
+}
+
 
 /*GENERATE REPORT BUTTON*/
 .right .report-generate {
@@ -733,4 +751,65 @@ main .date input[type="date"] {
   font-size: 1rem !important;
   color: #333;
   margin-bottom: 1rem;
+}
+
+/* TOP5 MOST POPULAR ITEM*/
+.popular-item-table {
+  margin-top: 2rem;
+}
+
+.popular-item-table h2 {
+  margin-bottom: 0.8rem;
+}
+
+.popular-item-table table {
+  background: var(--color-white);
+  width: 100%;
+  border-radius: var(--card-border-radius);
+  padding: var(--card-padding);
+  text-align: center;
+  box-shadow: var(--box-shadow);
+  transition: all 300ms ease;
+}
+
+.popular-item-table table:hover {
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.popular-item-table table tbody td {
+  height: 2.8rem;
+  border-bottom: 1px solid var(--color-light);
+  color: var(--color-dark-variant);
+}
+
+.popular-item-table table tbody tr:last-child td {
+  border: none;
+}
+
+.mdi--crown {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14z'/%3E%3C/svg%3E");
+  background-color: currentColor;
+  -webkit-mask-image: var(--svg);
+  mask-image: var(--svg);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+
+}
+
+.gold {
+  color: gold;
+}
+
+.silver {
+  color: silver;
+}
+
+.bronze {
+  color: #CE8946;
 }

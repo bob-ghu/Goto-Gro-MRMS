@@ -1,4 +1,9 @@
 <?php
+session_start();
+if (!isset($_SESSION['loggedin'])) {
+    header('Location: ../login/login.php');
+    exit;
+}
 require_once('../database/settings.php'); // Include your database settings
 
 // Create a connection
@@ -11,20 +16,23 @@ if ($conn->connect_error) {
 
 $limit = 8; // Number of notifications per page
 
-// Determine the current page from the URL parameter; default to 1 if not set
-$page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
-$offset = ($page - 1) * $limit;
-
-// Modify SQL query to include pagination
-$showlimit = "SELECT created_at, noti, message, notification_type FROM notifications ORDER BY created_at DESC LIMIT $limit OFFSET $offset";
-$result2 = mysqli_query($conn, $showlimit);
-
 // Query to get the total number of notifications for pagination calculations
 $sql_count = "SELECT COUNT(*) AS total FROM notifications";
 $count_result = mysqli_query($conn, $sql_count);
 $row_count = $count_result->fetch_assoc();
 $total_notifications = $row_count['total'];
 $total_pages = ceil($total_notifications / $limit);
+
+if (isset($_POST['page_input']) && $_POST['page_input'] <= $total_pages) {
+    $page = $_POST['page_input'];
+} else {
+    $page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
+}
+$offset = ($page - 1) * $limit;
+
+// Modify SQL query to include pagination
+$showlimit = "SELECT created_at, noti, message, notification_type FROM notifications ORDER BY created_at DESC LIMIT $limit OFFSET $offset";
+$result2 = mysqli_query($conn, $showlimit);
 
 // Query to fetch unread notifications
 $query = "SELECT message, notification_type FROM notifications WHERE is_read = 0";
@@ -39,6 +47,21 @@ if ($result && mysqli_num_rows($result) > 0) {
     $update_sql = "UPDATE notifications SET is_read = 1 WHERE is_read = 0";
     mysqli_query($conn, $update_sql);
 }
+
+// Get the current year
+$year = date('Y');
+
+// Query to get the top 5 most popular items based on the total quantity sold in the current year
+$popularItemQuery = "
+    SELECT i.Name, SUM(s.Quantity) AS total_sold
+    FROM sales s
+    JOIN inventory i ON s.Item_ID = i.Item_ID
+    WHERE YEAR(Sale_Date) = '$year'
+    GROUP BY s.Item_ID
+    ORDER BY total_sold DESC
+    LIMIT 3";  // Adjust the limit if you want more or fewer items
+
+$popularItemResult = $conn->query($popularItemQuery);
 ?>
 
 <!DOCTYPE html>
@@ -167,12 +190,14 @@ if ($result && mysqli_num_rows($result) > 0) {
                         <a href="?page=<?php echo $page - 1; ?>" class="pagination-prev-btn"><span class="material-icons-sharp">arrow_back_ios</span></a>
                     <?php endif; ?>
 
-                        Page
-                        <?php echo $page; ?> of
-                        <?php
-                        // If there are no pages, display "1" as the default total
-                        echo ($total_pages < 1) ? "1" : $total_pages;
-                        ?>
+                    Page
+                    <?php echo "<form id=\"page-form\" method=\"post\" action=\"./notification.php\" class=\"page-form\" novalidate=\"novalidate\">
+                                        <input type=\"text\" name=\"page_input\" id=\"page_input\" size=\"1\" value=" . $page . " /> 
+                                    </form>"; ?> of
+                    <?php
+                    // If there are no pages, display "1" as the default total
+                    echo ($total_pages < 1) ? "1" : $total_pages;
+                    ?>
 
                     <?php if ($page < $total_pages): ?>
                         <a href="?page=<?php echo $page + 1; ?>" class="pagination-next-btn"><span class="material-icons-sharp">arrow_forward_ios</span></a>
@@ -189,13 +214,60 @@ if ($result && mysqli_num_rows($result) > 0) {
                 </button>
                 <div class="profile">
                     <div class="info">
-                        <p>Hey, <b>Meow</b></p>
-                        <small class="text-muted">Admin</small>
+                        <p>Hey, <b><?php echo $_SESSION["Username"] ?></b></p>
+                        <small class="text-muted"><?php echo $_SESSION["Role"] ?></small>
                     </div>
                     <div class="profile-photo">
-                        <img src="../images/profile-1.jpg" alt="Profile Picture" />
+                        <img src="<?php echo $_SESSION["Picture"] ?>" alt="Profile Picture" />
                     </div>
                 </div>
+            </div>
+
+            <div class="popular-item-table">
+                <h2>Top Selling Items This Year</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th> <!-- New column for ranking -->
+                            <th>Item</th>
+                            <th>Quantity Sold</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        if ($popularItemResult && $popularItemResult->num_rows > 0):
+                            $rank = 1; // Initialize a counter for ranking
+                            while ($row = $popularItemResult->fetch_assoc()):
+                        ?>
+                                <tr>
+                                    <td data-label="Rank">
+                                        <?php
+
+                                        // Add a crown for top 3 items
+                                        if ($rank == 1) {
+                                            echo '<span class="mdi--crown gold"></span>'; // Crown emoji for rank 1
+                                        } elseif ($rank == 2) {
+                                            echo '<span class="mdi--crown silver"></span>'; // Crown emoji for rank 2
+                                        } elseif ($rank == 3) {
+                                            echo '<span class="mdi--crown bronze"></span>'; // Crown emoji for rank 3
+                                        } else {
+                                            echo $rank;
+                                        }
+                                        ?>
+                                    </td>
+                                    <td data-label="Item"><?php echo htmlspecialchars($row['Name']); ?></td>
+                                    <td data-label="Quantity Sold"><?php echo htmlspecialchars($row['total_sold']); ?></td>
+                                </tr>
+                                <?php $rank++; // Increment the rank 
+                                ?>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="3">No sales data available for this year.</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
             </div>
         </div>
         <script src="../index/index.js"></script>

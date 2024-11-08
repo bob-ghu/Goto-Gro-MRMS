@@ -1,4 +1,9 @@
-<?php 
+<?php
+    session_start();
+    if (!isset($_SESSION['loggedin'])) {
+        header('Location: ../login/login.php');
+        exit;
+    }
     if (!isset($_POST["name"])){
         header("Location: ./inventory.php"); 
         exit; 

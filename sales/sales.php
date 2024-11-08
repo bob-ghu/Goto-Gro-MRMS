@@ -1,4 +1,9 @@
 <?php
+session_start();
+if (!isset($_SESSION['loggedin'])) {
+  header('Location: ../login/login.php');
+  exit;
+}
 require_once('../database/settings.php'); // Include your database settings
 
 // Create a connection
@@ -11,17 +16,6 @@ if ($conn->connect_error) {
 
 // Pagination settings
 $limit = 9; // Number of rows per page
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1; // Get the current page number
-$offset = ($page - 1) * $limit; // Calculate the offset for SQL query
-
-// SQL query to fetch paginated sales details
-$sql = "SELECT sales.Sales_ID, members.Full_Name AS Member_Name, inventory.Name AS Item_Name, sales.Quantity, 
-        sales.Price_per_Unit, sales.Total_Price, sales.Sale_Date, sales.Payment_Method, sales.Staff_ID 
-        FROM sales 
-        JOIN members ON sales.Member_ID = members.Member_ID 
-        JOIN inventory ON sales.Item_ID = inventory.Item_ID 
-        LIMIT $limit OFFSET $offset";
-$result = $conn->query($sql);
 
 // Get total count of sales for pagination
 $sql_count = "SELECT COUNT(*) AS total FROM sales";
@@ -31,6 +25,23 @@ $total_sales = $row_count['total'];
 
 // Calculate total pages
 $total_pages = ceil($total_sales / $limit);
+
+if (isset($_POST['page_input']) && $_POST['page_input'] <= $total_pages) {
+  $page = $_POST['page_input'];
+} else {
+  $page = isset($_GET['page']) ? (int)$_GET['page'] : 1; // Get current page or default to 1
+}
+$offset = ($page - 1) * $limit; // Calculate the offset for SQL query
+
+// SQL query to fetch paginated sales details
+$sql = "SELECT sales.Sales_ID, members.Full_Name AS Member_Name, inventory.Name AS Item_Name, sales.Quantity, 
+        sales.Price_per_Unit, sales.Total_Price, sales.Sale_Date, sales.Payment_Method, staff.Full_Name AS Staff_Name
+        FROM sales 
+        JOIN members ON sales.Member_ID = members.Member_ID 
+        JOIN inventory ON sales.Item_ID = inventory.Item_ID 
+        JOIN staff ON sales.Staff_ID = staff.Staff_ID 
+        LIMIT $limit OFFSET $offset";
+$result = $conn->query($sql);
 
 // Fetch members from the database
 $query2 = "SELECT Member_ID, Full_Name FROM members";
@@ -65,6 +76,22 @@ $total_profit_query = "
     JOIN inventory i ON s.Item_ID = i.Item_ID"; // Ensure Item_ID matches your database schema
 $total_profit_result = $conn->query($total_profit_query);
 $total_profit = $total_profit_result->fetch_assoc()['total_profit'];
+
+// Get the current year
+$year = date('Y');
+
+// Query to get the top 5 most popular items based on the total quantity sold in the current year
+$popularItemQuery = "
+    SELECT i.Name, SUM(s.Quantity) AS total_sold
+    FROM sales s
+    JOIN inventory i ON s.Item_ID = i.Item_ID
+    WHERE YEAR(Sale_Date) = '$year'
+    GROUP BY s.Item_ID
+    ORDER BY total_sold DESC
+    LIMIT 3";  // Adjust the limit if you want more or fewer items
+
+$popularItemResult = $conn->query($popularItemQuery);
+
 ?>
 
 <!DOCTYPE html>
@@ -186,21 +213,64 @@ $total_profit = $total_profit_result->fetch_assoc()['total_profit'];
                 <div class="search-select-box">
                   <p>Search by:</p>
                   <select name="search-column" id="search-column">
-                    <option value="Sales_ID">Sales ID</option>
-                    <option value="members.Full_Name">Member Name</option>
-                    <option value="inventory.Name">Item Name</option>
-                    <option value="sales.Quantity">Quantity</option>
-                    <option value="Price_per_Unit">Price per Unit</option>
-                    <option value="Total_Price">Total Price</option>
-                    <option value="Sale_Date">Sale Date</option>
-                    <option value="Payment_Method">Payment Method</option>
-                    <option value="Staff_ID">Staff ID</option>
+                    <?php
+                    $excludedOption = "";
+                    if (isset($_GET['search-column'])) {
+                      echo "<option value=\"" . $_GET['search-column'] . "\">";
+                      if ($_GET['search-column'] == "members.Full_Name") {
+                        echo "Member Name";
+                      } elseif ($_GET['search-column'] == "inventory.Name") {
+                        echo "Item Name";
+                      } elseif ($_GET['search-column'] == "sales.Quantity") {
+                        echo "Quantity";
+                      } else {
+                        echo str_replace('_', ' ', $_GET['search-column']);
+                      }
+                      echo "</option>";
+                      $excludedOption = $_GET['search-column'];
+                    }
+
+                    $options = [
+                      "Sales_ID",
+                      "members.Full_Name",
+                      "inventory.Name",
+                      "sales.Quantity",
+                      "Price_per_Unit",
+                      "Total_Price",
+                      "Sale_Date",
+                      "Payment_Method",
+                      "Staff_ID"
+                    ];
+
+                    foreach ($options as $option) {
+                      $optionDisplay = "";
+                      if ($option == "members.Full_Name") {
+                        $optionDisplay = "Member Name";
+                      } elseif ($option == "inventory.Name") {
+                        $optionDisplay = "Item Name";
+                      } elseif ($option == "sales.Quantity") {
+                        $optionDisplay = "Quantity";
+                      } else {
+                        $optionDisplay = str_replace('_', ' ', $option);
+                      }
+                      // Exclude the specified country
+                      if (strcmp($option, $excludedOption) !== 0) {
+                        echo '<option value="' . $option . '">' . $optionDisplay . '</option>';
+                      }
+                    }
+                    ?>
                   </select>
                 </div>
 
                 <div class="search-container">
-                  <input type="text" name="search_bar" id="search_bar" maxlength="40" placeholder="Search" />
+                  <input type="text" name="search_bar" id="search_bar" maxlength="40" placeholder="Search" value="<?php
+                                                                                                                  if (isset($_GET['search_bar'])) {
+                                                                                                                    echo $_GET['search_bar'];
+                                                                                                                  } ?>" />
                   <button type="submit"><span class="material-icons-sharp">search</span></button>
+                </div>
+                <div id="current-filter">
+                  <a><button type="button" onclick="window.location.href=window.location.pathname;">Clear Filter</button></a>
                 </div>
               </div>
             </form>
@@ -239,14 +309,15 @@ $total_profit = $total_profit_result->fetch_assoc()['total_profit'];
 
                 // Construct the SQL query based on the selected column
                 $sql_search = "SELECT sales.Sales_ID, members.Full_Name AS Member_Name, inventory.Name AS Item_Name, sales.Quantity, 
-                sales.Price_per_Unit, sales.Total_Price, sales.Sale_Date, sales.Payment_Method, sales.Staff_ID FROM sales 
-                JOIN members ON sales.Member_ID = members.Member_ID JOIN inventory ON sales.Item_ID = inventory.Item_ID 
+                sales.Price_per_Unit, sales.Total_Price, sales.Sale_Date, sales.Payment_Method, staff.Full_Name AS Staff_Name FROM sales 
+                JOIN members ON sales.Member_ID = members.Member_ID JOIN inventory ON sales.Item_ID = inventory.Item_ID JOIN staff ON sales.Staff_ID = staff.Staff_ID
                 WHERE $search_column LIKE '%$search_term%'";
 
                 $result_search = $conn->query($sql_search);
 
                 // Check if any results were found
                 if ($result_search->num_rows > 0) {
+                  $total_pages = 1;
                   while ($row = $result_search->fetch_assoc()) {
                     echo "<tr>";
                     echo "<td>" . htmlspecialchars($row['Sales_ID']) . "</td>";
@@ -257,7 +328,7 @@ $total_profit = $total_profit_result->fetch_assoc()['total_profit'];
                     echo "<td>" . htmlspecialchars($row['Total_Price']) . "</td>";
                     echo "<td>" . htmlspecialchars($row['Sale_Date']) . "</td>";
                     echo "<td>" . htmlspecialchars($row['Payment_Method']) . "</td>";
-                    echo "<td>" . htmlspecialchars($row['Staff_ID']) . "</td>";
+                    echo "<td>" . htmlspecialchars($row['Staff_Name']) . "</td>";
                     echo "<td><a class='edit-sales' onclick=\"requestSalesInfo(this)\" data-sales-id='" . $row["Sales_ID"] . "'>Edit</a></td>";
                     echo "</tr>";
                   }
@@ -276,7 +347,7 @@ $total_profit = $total_profit_result->fetch_assoc()['total_profit'];
                     echo "<td>" . $row["Total_Price"] . "</td>";
                     echo "<td>" . $row["Sale_Date"] . "</td>";
                     echo "<td>" . $row["Payment_Method"] . "</td>";
-                    echo "<td>" . $row["Staff_ID"] . "</td>";
+                    echo "<td>" . $row["Staff_Name"] . "</td>";
                     echo "<td><a class='edit-sales' onclick=\"requestSalesInfo(this)\" data-sales-id='" . $row["Sales_ID"] . "'>Edit</a></td>";
                     echo "</tr>";
                   }
@@ -294,7 +365,9 @@ $total_profit = $total_profit_result->fetch_assoc()['total_profit'];
             <?php endif; ?>
 
             Page
-            <?php echo $page; ?> of
+            <?php echo "<form id=\"page-form\" method=\"post\" action=\"./sales.php\" class=\"page-form\" novalidate=\"novalidate\">
+                            <input type=\"text\" name=\"page_input\" id=\"page_input\" size=\"1\" value=" . $page . " /> 
+                        </form>"; ?> of
             <?php
             // If there are no pages, display "1" as the default total
             echo ($total_pages < 1) ? "1" : $total_pages;
@@ -316,11 +389,11 @@ $total_profit = $total_profit_result->fetch_assoc()['total_profit'];
         </button>
         <div class="profile">
           <div class="info">
-            <p>Hey, <b>Meow</b></p>
-            <small class="text-muted">Admin</small>
+            <p>Hey, <b><?php echo $_SESSION["Username"] ?></b></p>
+            <small class="text-muted"><?php echo $_SESSION["Role"] ?></small>
           </div>
           <div class="profile-photo">
-            <img src="../images/profile-1.jpg" alt="Profile Picture" />
+            <img src="<?php echo $_SESSION["Picture"] ?>" alt="Profile Picture" />
           </div>
         </div>
       </div>
@@ -362,6 +435,51 @@ $total_profit = $total_profit_result->fetch_assoc()['total_profit'];
           }
           ?>
         </a>
+      </div>
+
+      <div class="popular-item-table">
+        <h2>Top Selling Items This Year</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th> <!-- New column for ranking -->
+              <th>Item</th>
+              <th>Quantity Sold</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php
+            if ($popularItemResult && $popularItemResult->num_rows > 0):
+              $rank = 1; // Initialize a counter for ranking
+              while ($row = $popularItemResult->fetch_assoc()):
+            ?>
+                <tr>
+                  <td data-label="Rank">
+                    <?php
+
+                    // Add a crown for top 3 items
+                    if ($rank == 1) {
+                      echo '<span class="mdi--crown gold"></span>'; // Crown emoji for rank 1
+                    } elseif ($rank == 2) {
+                      echo '<span class="mdi--crown silver"></span>'; // Crown emoji for rank 2
+                    } elseif ($rank == 3) {
+                      echo '<span class="mdi--crown bronze"></span>'; // Crown emoji for rank 3
+                    }
+                    ?>
+                  </td>
+                  <td data-label="Item"><?php echo htmlspecialchars($row['Name']); ?></td>
+                  <td data-label="Quantity Sold"><?php echo htmlspecialchars($row['total_sold']); ?></td>
+                </tr>
+                <?php $rank++; // Increment the rank 
+                ?>
+              <?php endwhile; ?>
+            <?php else: ?>
+              <tr>
+                <td colspan="3">No sales data available for this year.</td>
+              </tr>
+            <?php endif; ?>
+          </tbody>
+        </table>
       </div>
 
       <div class="report-generate">
@@ -425,11 +543,11 @@ $total_profit = $total_profit_result->fetch_assoc()['total_profit'];
                 <select name="staff_id" id="staff_id">
                   <option value="">Select staff</option>
                   <!-- Populate this with dynamic options based on employees -->
-                  <option value="1">Staff 1</option>
-                  <option value="2">Staff 2</option>
-                  <option value="3">Staff 3</option>
-                  <option value="4">Staff 4</option>
-                  <option value="5">Staff 5</option>
+                  <option value="1">Siew Yat Fei</option>
+                  <option value="2">Goh Mun Hong</option>
+                  <option value="3">Chan Chun Xian</option>
+                  <option value="4">Samuel Ho Shenhao</option>
+                  <option value="5">Guest</option>
                   <!-- More options dynamically loaded -->
                 </select>
               </div>

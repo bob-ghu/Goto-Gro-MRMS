@@ -1,4 +1,9 @@
 <?php
+session_start();
+if (!isset($_SESSION['loggedin'])) {
+    header('Location: ../login/login.php');
+    exit;
+}
 require_once('../database/settings.php'); // Include your database settings
 
 // Create a connection
@@ -24,7 +29,23 @@ if (!$feedbackResult) {
     die("Error fetching feedback: " . mysqli_error($conn));
 }
 
+// Get the current year
+$year = date('Y');
+
+// Query to get the top 5 most popular items based on the total quantity sold in the current year
+$popularItemQuery = "
+    SELECT i.Name, SUM(s.Quantity) AS total_sold
+    FROM sales s
+    JOIN inventory i ON s.Item_ID = i.Item_ID
+    WHERE YEAR(Sale_Date) = '$year'
+    GROUP BY s.Item_ID
+    ORDER BY total_sold DESC
+    LIMIT 3";  // Adjust the limit if you want more or fewer items
+
+$popularItemResult = $conn->query($popularItemQuery);
+
 // Close the database connection
+$conn->close();
 ?>
 
 <!DOCTYPE html>
@@ -98,70 +119,6 @@ if (!$feedbackResult) {
 
         <main>
             <h1>Feedback</h1>
-            <div class="insights">
-                <!----- Start Tab 1 ----->
-                <div class="sales">
-                    <span class="material-icons-sharp"> analytics </span>
-                    <div class="middle">
-                        <div class="left">
-                            <h3>Total Sales</h3>
-                            <h1>$25,024</h1>
-                        </div>
-                        <div class="progress">
-                            <svg>
-                                <circle cx="38" cy="38" r="36"></circle>
-                            </svg>
-                            <div class="number">
-                                <p>81%</p>
-                            </div>
-                        </div>
-                    </div>
-                    <small class="text-muted"> Last 24 hours </small>
-                </div>
-                <!----- End Tab 1 ----->
-
-                <!----- Start Tab 2 ----->
-                <div class="expenses">
-                    <span class="material-icons-sharp"> bar_chart </span>
-                    <div class="middle">
-                        <div class="left">
-                            <h3>Total Expenses</h3>
-                            <h1>$14,160</h1>
-                        </div>
-                        <div class="progress">
-                            <svg>
-                                <circle cx="38" cy="38" r="36"></circle>
-                            </svg>
-                            <div class="number">
-                                <p>62%</p>
-                            </div>
-                        </div>
-                    </div>
-                    <small class="text-muted"> Last 24 hours </small>
-                </div>
-                <!----- End Tab 2 ----->
-
-                <!----- Start Tab 3 ----->
-                <div class="income">
-                    <span class="material-icons-sharp"> stacked_line_chart </span>
-                    <div class="middle">
-                        <div class="left">
-                            <h3>Total Income</h3>
-                            <h1>$10,864</h1>
-                        </div>
-                        <div class="progress">
-                            <svg>
-                                <circle cx="38" cy="38" r="36"></circle>
-                            </svg>
-                            <div class="number">
-                                <p>44%</p>
-                            </div>
-                        </div>
-                    </div>
-                    <small class="text-muted"> Last 24 hours </small>
-                </div>
-                <!----- End Tab 3 ----->
-            </div>
 
             <div class="feedback-container">
                 <!--member add feedback-->
@@ -214,11 +171,11 @@ if (!$feedbackResult) {
                 </button>
                 <div class="profile">
                     <div class="info">
-                        <p>Hey, <b>Meow</b></p>
-                        <small class="text-muted">Admin</small>
+                        <p>Hey, <b><?php echo $_SESSION["Username"] ?></b></p>
+                        <small class="text-muted"><?php echo $_SESSION["Role"] ?></small>
                     </div>
                     <div class="profile-photo">
-                        <img src="../images/profile-1.jpg" alt="Profile Picture" />
+                        <img src="<?php echo $_SESSION["Picture"] ?>" alt="Profile Picture" />
                     </div>
                 </div>
             </div>
@@ -260,6 +217,51 @@ if (!$feedbackResult) {
                     }
                     ?>
                 </a>
+            </div>
+
+            <div class="popular-item-table">
+                <h2>Top Selling Items This Year</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th> <!-- New column for ranking -->
+                            <th>Item</th>
+                            <th>Quantity Sold</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        if ($popularItemResult && $popularItemResult->num_rows > 0):
+                            $rank = 1; // Initialize a counter for ranking
+                            while ($row = $popularItemResult->fetch_assoc()):
+                        ?>
+                                <tr>
+                                    <td data-label="Rank">
+                                        <?php
+
+                                        // Add a crown for top 3 items
+                                        if ($rank == 1) {
+                                            echo '<span class="mdi--crown gold"></span>'; // Crown emoji for rank 1
+                                        } elseif ($rank == 2) {
+                                            echo '<span class="mdi--crown silver"></span>'; // Crown emoji for rank 2
+                                        } elseif ($rank == 3) {
+                                            echo '<span class="mdi--crown bronze"></span>'; // Crown emoji for rank 3
+                                        }
+                                        ?>
+                                    </td>
+                                    <td data-label="Item"><?php echo htmlspecialchars($row['Name']); ?></td>
+                                    <td data-label="Quantity Sold"><?php echo htmlspecialchars($row['total_sold']); ?></td>
+                                </tr>
+                                <?php $rank++; // Increment the rank 
+                                ?>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="3">No sales data available for this year.</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
             </div>
         </div>
         <!-- Modal Overlay (Form is moved outside the container) -->

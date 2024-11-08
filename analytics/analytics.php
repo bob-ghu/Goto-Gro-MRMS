@@ -1,4 +1,10 @@
 <?php
+session_start();
+if (!isset($_SESSION['loggedin'])) {
+  header('Location: ../login/login.php');
+  exit;
+}
+
 require_once('../database/settings.php'); // Include your database settings
 
 // Create a connection
@@ -152,6 +158,21 @@ $notiCount = mysqli_query($conn, $unread);
 $query2 = "SELECT noti, created_at, notification_type FROM notifications WHERE is_read = 0 ORDER BY created_at DESC LIMIT 3";
 $recentNoti = mysqli_query($conn, $query2);
 
+// Get the current year
+$year = date('Y');
+
+// Query to get the top 5 most popular items based on the total quantity sold in the current year
+$popularItemQuery = "
+    SELECT i.Name, SUM(s.Quantity) AS total_sold
+    FROM sales s
+    JOIN inventory i ON s.Item_ID = i.Item_ID
+    WHERE YEAR(Sale_Date) = '$year'
+    GROUP BY s.Item_ID
+    ORDER BY total_sold DESC
+    LIMIT 3";  // Adjust the limit if you want more or fewer items
+
+$popularItemResult = $conn->query($popularItemQuery);
+
 $conn->close(); // Close the database connection
 ?>
 
@@ -235,15 +256,15 @@ $conn->close(); // Close the database connection
                 <div class="filter">
                     <h3>Filter</h3>
                     <h4>Select Sales Period</h4>
-                    <select id="salesPeriod" onchange="toggleInputFields()">
+                    <select id="salesPeriod" name="salesPeriod" onchange="toggleInputFields()">
                         <option value="daily">Daily</option>
                         <option value="weekly">Weekly</option>
                         <option value="monthly" selected>Monthly</option>
                         <option value="specific_date">Specific Date</option>
                         <option value="specific_month">Specific Month</option>
                     </select>
-                    <input type="date" id="specificDate" style="display: none;" placeholder="Select Date">
-                    <input type="month" id="specificMonth" style="display: none;" placeholder="Select Month">
+                    <input type="date" id="specificDate" name="specificDate" style="display: none;" placeholder="Select Date">
+                    <input type="month" id="specificMonth" name="specificMonth" style="display: none;" placeholder="Select Month">
 
                     <h4>Select Member</h4>
                     <select id="memberSelect">
@@ -285,11 +306,11 @@ $conn->close(); // Close the database connection
                 </button>
                 <div class="profile">
                     <div class="info">
-                        <p>Hey, <b>Meow</b></p>
-                        <small class="text-muted">Admin</small>
+                        <p>Hey, <b><?php echo $_SESSION["Username"] ?></b></p>
+                        <small class="text-muted"><?php echo $_SESSION["Role"] ?></small>
                     </div>
                     <div class="profile-photo">
-                        <img src="../images/profile-1.jpg" alt="Profile Picture" />
+                        <img src="<?php echo $_SESSION["Picture"] ?>" alt="Profile Picture" />
                     </div>
                 </div>
             </div>
@@ -333,16 +354,65 @@ $conn->close(); // Close the database connection
                 </a>
             </div>
 
+            <div class="popular-item-table">
+                <h2>Top Selling Items This Year</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th> <!-- New column for ranking -->
+                            <th>Item</th>
+                            <th>Quantity Sold</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        if ($popularItemResult && $popularItemResult->num_rows > 0):
+                            $rank = 1; // Initialize a counter for ranking
+                            while ($row = $popularItemResult->fetch_assoc()):
+                        ?>
+                                <tr>
+                                    <td data-label="Rank">
+                                        <?php
+
+                                        // Add a crown for top 3 items
+                                        if ($rank == 1) {
+                                            echo '<span class="mdi--crown gold"></span>'; // Crown emoji for rank 1
+                                        } elseif ($rank == 2) {
+                                            echo '<span class="mdi--crown silver"></span>'; // Crown emoji for rank 2
+                                        } elseif ($rank == 3) {
+                                            echo '<span class="mdi--crown bronze"></span>'; // Crown emoji for rank 3
+                                        } else {
+                                            echo $rank;
+                                        }
+                                        ?>
+                                    </td>
+                                    <td data-label="Item"><?php echo htmlspecialchars($row['Name']); ?></td>
+                                    <td data-label="Quantity Sold"><?php echo htmlspecialchars($row['total_sold']); ?></td>
+                                </tr>
+                                <?php $rank++; // Increment the rank 
+                                ?>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="3">No sales data available for this year.</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+
             <div class="report-generate">
                 <h2>Export Analytics Data</h2>
 
                 <form method="POST" action="export_analytics.php" class="report-type-form">
                     <h4>Select Report Type:</h4>
                     <select name="report_type" id="report_type" required>
-                        <option value="">--Select a report--</option>
+                        <option hidden="hidden">--Select a report--</option>
                         <option value="member_sales">Member Sales Data</option>
                         <option value="time_period_sales">Time Period Sales Data</option>
                     </select>
+                    <input type="hidden" id="range" name="range" />
+                    <input type="hidden" id="specific" name="specific" />
                     <button class="submit">
                         <div class="report-generate-button">
                             <span class="material-icons-sharp">print</span>
@@ -366,6 +436,7 @@ $conn->close(); // Close the database connection
 
             function updateCharts() {
                 const period = document.getElementById('salesPeriod').value; // Get selected period
+                document.getElementById('range').value = document.getElementById('salesPeriod').value;
                 const memberId = document.getElementById('memberSelect').value; // Get selected member ID
                 let url = `analytics.php?period=${period}`;
                 let selectedPeriodText = '';
@@ -379,10 +450,12 @@ $conn->close(); // Close the database connection
                     specificDate = document.getElementById('specificDate').value; // Get specific date
                     url += `&specific_date=${specificDate}`; // Append to URL
                     selectedPeriodText = `Sales on ${specificDate}`; // Update display text
+                    document.getElementById('specific').value = document.getElementById('specificDate').value;
                 } else if (period === 'specific_month') {
                     specificMonth = document.getElementById('specificMonth').value; // Get specific month
                     url += `&specific_month=${specificMonth}`; // Append to URL
                     selectedPeriodText = `Sales in ${specificMonth}`; // Update display text
+                    document.getElementById('specific').value = document.getElementById('specificMonth').value;
                 } else {
                     selectedPeriodText = `Sales - ${period.charAt(0).toUpperCase() + period.slice(1)}`; // Format period text
                 }
