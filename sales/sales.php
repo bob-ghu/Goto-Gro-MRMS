@@ -294,7 +294,7 @@ $popularItemResult = $conn->query($popularItemQuery);
                 <th>Total Price</th>
                 <th>Sale Date</th>
                 <th>Payment Method</th>
-                <th>Staff ID</th>
+                <th>Staff Name</th>
                 <th></th>
               </tr>
             </thead>
