@@ -16,7 +16,7 @@ if ($conn->connect_error) {
 }
 
 // Pagination setup
-$limit = 7;
+$limit = 6;
 
 // Get total number of records for pagination calculation
 $sql_count = "SELECT COUNT(*) AS total FROM inventory";
@@ -27,8 +27,7 @@ $total_pages = ceil($total_inventory / $limit); // Total pages based on records
 
 if (isset($_POST['page_input']) && $_POST['page_input'] <= $total_pages) {
     $page = $_POST['page_input'];
-}
-else {
+} else {
     $page = isset($_GET['page']) ? (int)$_GET['page'] : 1; // Get current page or default to 1
 }
 $offset = ($page - 1) * $limit;
@@ -221,12 +220,15 @@ $popularItemResult = $conn->query($popularItemQuery);
                                 <div class="search-select-box">
                                     <p>Search by:</p>
                                     <select name="search-column" id="search-column">
-                                    <?php
+                                        <?php
                                         $excludedOption = "";
                                         if (isset($_GET['search-column'])) {
                                             echo "<option value=\"" . $_GET['search-column'] . "\">";
-                                            if ($_GET['search-column'] == "Name") { echo "Item"; }
-                                            else { echo str_replace('_', ' ', $_GET['search-column']); }
+                                            if ($_GET['search-column'] == "Name") {
+                                                echo "Item";
+                                            } else {
+                                                echo str_replace('_', ' ', $_GET['search-column']);
+                                            }
                                             echo "</option>";
                                             $excludedOption = $_GET['search-column'];
                                         }
@@ -245,26 +247,29 @@ $popularItemResult = $conn->query($popularItemQuery);
 
                                         foreach ($options as $option) {
                                             $optionDisplay = "";
-                                            if ($option == "Name") { $optionDisplay = "Item"; }
-                                            else { $optionDisplay = str_replace('_', ' ', $option); }
+                                            if ($option == "Name") {
+                                                $optionDisplay = "Item";
+                                            } else {
+                                                $optionDisplay = str_replace('_', ' ', $option);
+                                            }
                                             // Exclude the specified country
                                             if (strcmp($option, $excludedOption) !== 0) {
-                                                echo'<option value="' . $option . '">' . $optionDisplay . '</option>';
+                                                echo '<option value="' . $option . '">' . $optionDisplay . '</option>';
                                             }
                                         }
-                                    ?>
+                                        ?>
                                     </select>
                                 </div>
 
                                 <div class="search-container">
-                                    <input type="text" name="search_bar" id="search_bar" maxlength="40" placeholder="Search" value="<?php 
-                                    if (isset($_GET['search_bar'])) {
-                                        echo $_GET['search_bar'];
-                                    }?>"/>
+                                    <input type="text" name="search_bar" id="search_bar" maxlength="40" placeholder="Search" value="<?php
+                                                                                                                                    if (isset($_GET['search_bar'])) {
+                                                                                                                                        echo $_GET['search_bar'];
+                                                                                                                                    } ?>" />
                                     <button type="submit"><span class="material-icons-sharp">search</span></button>
                                 </div>
                                 <div id="current-filter">
-                                <a><button type="button" onclick="window.location.href=window.location.pathname;">Clear Filter</button></a>
+                                    <a><button type="button" onclick="window.location.href=window.location.pathname;">Clear Filter</button></a>
                                 </div>
                             </div>
                         </form>
@@ -358,7 +363,7 @@ $popularItemResult = $conn->query($popularItemQuery);
                         Page
                         <?php echo "<form id=\"page-form\" method=\"post\" action=\"./inventory.php\" class=\"page-form\" novalidate=\"novalidate\">
                                         <input type=\"text\" name=\"page_input\" id=\"page_input\" size=\"1\" value=" . $page . " /> 
-                                    </form>";?> of
+                                    </form>"; ?> of
                         <?php
                         // If there are no pages, display "1" as the default total
                         echo ($total_pages < 1) ? "1" : $total_pages;
@@ -687,6 +692,36 @@ $popularItemResult = $conn->query($popularItemQuery);
                 </form>
             </div>
         </div>
+
+        <?php if (isset($_GET['add']) && $_GET['add'] === 'success'): ?>
+            <div class="status success">
+                Inventory added successfully!
+            </div>
+        <?php elseif (isset($_GET['add']) && $_GET['add'] === 'error'): ?>
+            <div class="status error">
+                There was an error adding the inventory. Please try again.
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($_GET['edit']) && $_GET['edit'] === 'success'): ?>
+            <div class="status success">
+                Inventory edited successfully!
+            </div>
+        <?php elseif (isset($_GET['edit']) && $_GET['edit'] === 'error'): ?>
+            <div class="status error">
+                There was an error editing the inventory. Please try again.
+            </div>
+        <?php endif; ?>
+
+        <script>
+            // Hide the notification after 3 seconds
+            setTimeout(function() {
+                const status = document.querySelector('.status');
+                if (status) {
+                    status.style.display = 'none';
+                }
+            }, 3000);
+        </script>
 
         <script src="../index/index.js"></script>
         <script src="./inventory.js"></script>

@@ -2,7 +2,7 @@
 session_start();
 if (!isset($_SESSION['loggedin'])) {
     header('Location: ../login/login.php');
-    exit;
+    exit;
 }
 
 // Include database connection settings
@@ -57,12 +57,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($conn->query($sql) === TRUE) {
         // Set a success message in the session and redirect to members page
         $_SESSION['success'] = "Member details updated successfully.";
-        header("Location: ./members.php");
+        header("Location: ./members.php?edit=success");
         exit();
     } else {
         // Set an error message in the session if the query fails
         $_SESSION['error'] = "Error updating record: " . $conn->error;
-        header("Location: ./members.php");
+        header("Location: ./members.php?edit=error");
         exit();
     }
 } else {

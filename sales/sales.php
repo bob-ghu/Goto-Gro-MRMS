@@ -15,7 +15,7 @@ if ($conn->connect_error) {
 }
 
 // Pagination settings
-$limit = 9; // Number of rows per page
+$limit = 8; // Number of rows per page
 
 // Get total count of sales for pagination
 $sql_count = "SELECT COUNT(*) AS total FROM sales";
@@ -39,7 +39,8 @@ $sql = "SELECT sales.Sales_ID, members.Full_Name AS Member_Name, inventory.Name 
         FROM sales 
         JOIN members ON sales.Member_ID = members.Member_ID 
         JOIN inventory ON sales.Item_ID = inventory.Item_ID 
-        JOIN staff ON sales.Staff_ID = staff.Staff_ID 
+        JOIN staff ON sales.Staff_ID = staff.Staff_ID
+        ORDER BY sales.Sales_ID
         LIMIT $limit OFFSET $offset";
 $result = $conn->query($sql);
 
@@ -92,6 +93,9 @@ $popularItemQuery = "
 
 $popularItemResult = $conn->query($popularItemQuery);
 
+// Fetch the staff names from the staff table
+$staffQuery = "SELECT Staff_ID, Full_Name FROM staff";  // Adjust table/column names if needed
+$staffResult = $conn->query($staffQuery);
 ?>
 
 <!DOCTYPE html>
@@ -541,14 +545,19 @@ $popularItemResult = $conn->query($popularItemQuery);
               <label for="staff_id">Processed By (Staff)</label>
               <div class="select-box staff-box">
                 <select name="staff_id" id="staff_id">
-                  <option value="">Select staff</option>
-                  <!-- Populate this with dynamic options based on employees -->
-                  <option value="1">Siew Yat Fei</option>
-                  <option value="2">Goh Mun Hong</option>
-                  <option value="3">Chan Chun Xian</option>
-                  <option value="4">Samuel Ho Shenhao</option>
-                  <option value="5">Guest</option>
-                  <!-- More options dynamically loaded -->
+                  <?php
+                  if ($staffResult->num_rows > 0) {
+                    echo '<option hidden="hidden">Select staff</option>';
+                    // Loop through the staff results and generate options dynamically
+                    while ($staffRow = $staffResult->fetch_assoc()) {
+                      $staff_id = $staffRow['Staff_ID'];
+                      $staff_name = $staffRow['Full_Name'];
+                      echo "<option value='$staff_id'>$staff_name</option>";
+                    }
+                  } else {
+                    echo "<p>No staff members found.</p>";
+                  }
+                  ?>
                 </select>
               </div>
 
@@ -647,6 +656,36 @@ $popularItemResult = $conn->query($popularItemQuery);
       </div>
     </div>
 
+    <?php if (isset($_GET['add']) && $_GET['add'] === 'success'): ?>
+      <div class="status success">
+        Sale added successfully!
+      </div>
+    <?php elseif (isset($_GET['add']) && $_GET['add'] === 'error'): ?>
+      <div class="status error">
+        There was an error adding the sale. Please try again.
+      </div>
+    <?php endif; ?>
+
+    <?php if (isset($_GET['edit']) && $_GET['edit'] === 'success'): ?>
+      <div class="status success">
+        Sale edited successfully!
+      </div>
+    <?php elseif (isset($_GET['edit']) && $_GET['edit'] === 'error'): ?>
+      <div class="status error">
+        There was an error editing the sale. Please try again.
+      </div>
+    <?php endif; ?>
+
+    <script>
+      // Hide the notification after 3 seconds
+      setTimeout(function() {
+        const status = document.querySelector('.status');
+        if (status) {
+          status.style.display = 'none';
+        }
+      }, 3000);
+    </script>
+
     <?php
     // Generate product options in PHP
     $productOptions = '';
@@ -705,21 +744,22 @@ $popularItemResult = $conn->query($popularItemQuery);
   <script>
     // JavaScript function to send AJAX request to PHP
     function requestSalesInfo(record) {
-      // Make a GET request to the PHP script using fetch()
+      // Make a POST request to the PHP script using fetch()
       fetch('request_sales.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json', // Specify plain text format
           },
-          body: record.getAttribute('data-sales-id')
+          body: record.getAttribute('data-sales-id') // Send the Sales_ID as the body
         })
-        .then(response => response.json()) // Expect a json response
+        .then(response => response.json()) // Expect a JSON response
         .then(data => {
           if (data.error) {
-            console.log("error"); // Debugging
+            console.log("Error fetching data"); // Debugging
           } else {
             const excludedMember = data.Request_Data.Member_Name;
 
+            // Build Member Dropdown
             var selectBox_members = "";
             selectBox_members += "<option value=\"" + data.Request_Data.Member_ID + "\">" + excludedMember + "</option>";
             data.Members_Table.forEach(member => {
@@ -728,35 +768,29 @@ $popularItemResult = $conn->query($popularItemQuery);
               }
             });
 
+            // Build Payment Method Dropdown
             const excludedPayment = data.Request_Data.Payment_Method;
-
             var selectBox_payment = "";
             selectBox_payment += "<option value=\"" + excludedPayment + "\">" + excludedPayment + "</option>";
-            if (excludedPayment == "Cash") {
+            if (excludedPayment === "Cash") {
               selectBox_payment += "<option value=Card>Card</option>";
             } else {
               selectBox_payment += "<option value=Cash>Cash</option>";
             }
 
+            // Build Staff Dropdown
             const excludedStaff = data.Request_Data.Staff_ID;
-            const staffs = [
-              1,
-              2,
-              3,
-              4,
-              5
-            ];
 
             var selectBox_staff = "";
-            selectBox_staff += "<option value=\"" + excludedStaff + "\">" + excludedStaff + "</option>";
-            for (const staff of staffs) {
-              if (staff != excludedStaff) {
-                selectBox_staff += "<option value=\"" + staff + "\">" + staff + "</option>";
+            selectBox_staff += "<option value=\"" + excludedStaff + "\">" + data.Request_Data.Staff_Name + "</option>";
+            data.Staff_Table.forEach(staff => {
+              if (staff.Staff_ID !== excludedStaff) {
+                selectBox_staff += "<option value=\"" + staff.Staff_ID + "\">" + staff.Full_Name + "</option>";
               }
-            }
+            });
 
+            // Build Inventory Dropdown
             const excludedItem = data.Request_Data.Item_Name;
-
             var selectBox_inventory = "";
             selectBox_inventory += "<option value=\"" + data.Request_Data.Item_ID + "\">" + excludedItem + "</option>";
             data.Inventory_Table.forEach(item => {
@@ -765,12 +799,16 @@ $popularItemResult = $conn->query($popularItemQuery);
               }
             });
 
+            // Populate the dropdowns
             document.getElementById('member_edit').innerHTML = selectBox_members;
             document.getElementById('payment_method_edit').innerHTML = selectBox_payment;
             document.getElementById('staff_edit').innerHTML = selectBox_staff;
             document.getElementById('product_edit').innerHTML = selectBox_inventory;
+
+            // Set quantity
             document.getElementById('quantity_edit').value = data.Request_Data.Quantity;
 
+            // Call previous item details function (if needed)
             previousSalesItem(data.Request_Data.Item_ID, data.Request_Data.Quantity);
           }
         })

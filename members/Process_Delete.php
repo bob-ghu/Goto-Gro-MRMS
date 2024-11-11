@@ -2,7 +2,7 @@
 session_start();
 if (!isset($_SESSION['loggedin'])) {
     header('Location: ../login/login.php');
-    exit;
+    exit;
 }
 
 require_once('../database/settings.php');
@@ -32,22 +32,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $update_member_sql = "UPDATE members SET Status = 'active' WHERE Member_ID = '$member_id'";
             if ($conn->query($update_member_sql) === TRUE) {
                 $_SESSION['success'] = "Member reactivated successfully.";
-                header("Location: ./members.php");
+                header("Location: ./members.php?reactivate=success");
                 exit();
             } else {
                 $_SESSION['error'] = "Error reactivating member: " . $conn->error;
-                header("Location: ./members.php");
+                header("Location: ./members.php?reactivate=error");
                 exit();
             }
         } else {
             $update_member_sql = "UPDATE members SET Status = 'inactive' WHERE Member_ID = '$member_id'";
             if ($conn->query($update_member_sql) === TRUE) {
                 $_SESSION['success'] = "Member marked as inactive successfully.";
-                header("Location: ./members.php");
+                header("Location: ./members.php?deactivate=success");
                 exit();
             } else {
                 $_SESSION['error'] = "Error marking member as inactive: " . $conn->error;
-                header("Location: ./members.php");
+                header("Location: ./members.php?deactivate=error");
                 exit();
             }
         }

@@ -2,7 +2,7 @@
     session_start();
     if (!isset($_SESSION['loggedin'])) {
         header('Location: ../login/login.php');
-        exit;
+        exit;
     }
     $memberID = file_get_contents("php://input");
     require_once('../database/settings.php');

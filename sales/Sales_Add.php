@@ -2,7 +2,7 @@
 session_start();
 if (!isset($_SESSION['loggedin'])) {
     header('Location: ../login/login.php');
-    exit;
+    exit;
 }
 if (!isset($_POST["member_id"])) {
     header("Location: ./sales.php");
@@ -113,15 +113,6 @@ if (!$conn) {
             $Item_ID = $inventoryIds[$i];
             $Quantity = $quantities[$i];
 
-            // Debugging: Check Item_ID and Quantity
-            //echo "<p>Processing Item ID: '$Item_ID', Quantity: '$Quantity'</p>";
-
-            // Check for empty Item_ID and Quantity before proceeding
-            if (empty($Item_ID) || empty($Quantity) || $Quantity < 1) {
-                echo "<p>Error: Item ID or quantity is invalid. Skipping this entry.</p>";
-                continue; // Skip to the next iteration
-            }
-
             // Fetch the Price per Unit for the selected Item_ID from the inventory table
             $sql = "SELECT Name, Selling_Price, Quantity, Reorder_Level FROM inventory WHERE Item_ID = '$Item_ID'";
             $result = mysqli_query($conn, $sql);
@@ -175,13 +166,11 @@ if (!$conn) {
                 echo "<p>Error fetching product price: ", mysqli_error($conn), "</p>";
             }
         }
-        echo "<h3>Sales successfully added!</h3>";
+        // Redirect to sales.php with success status
+        header("Location: ./sales.php?add=success");
+        exit;
     }
 
     mysqli_close($conn);
 }
 ?>
-
-<a href="./sales.php">
-    <button>Return</button>
-</a>

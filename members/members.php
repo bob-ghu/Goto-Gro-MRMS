@@ -757,6 +757,56 @@ $popularItemResult = $conn->query($popularItemQuery);
             </div>
         </div>
 
+        <?php if (isset($_GET['add']) && $_GET['add'] === 'success'): ?>
+      <div class="status success">
+        Member added successfully!
+      </div>
+    <?php elseif (isset($_GET['add']) && $_GET['add'] === 'error'): ?>
+      <div class="status error">
+        There was an error adding the member. Please try again.
+      </div>
+    <?php endif; ?>
+
+    <?php if (isset($_GET['edit']) && $_GET['edit'] === 'success'): ?>
+      <div class="status success">
+        Member edited successfully!
+      </div>
+    <?php elseif (isset($_GET['edit']) && $_GET['edit'] === 'error'): ?>
+      <div class="status error">
+        There was an error editing the member. Please try again.
+      </div>
+    <?php endif; ?>
+
+    <?php if (isset($_GET['reactivate']) && $_GET['reactivate'] === 'success'): ?>
+      <div class="status success">
+        Member reactivated successfully!
+      </div>
+    <?php elseif (isset($_GET['reactivate']) && $_GET['reactivate'] === 'error'): ?>
+      <div class="status error">
+        There was an error reactivating the member. Please try again.
+      </div>
+    <?php endif; ?>
+
+    <?php if (isset($_GET['deactivate']) && $_GET['deactivate'] === 'success'): ?>
+      <div class="status success">
+        Member deactivated successfully!
+      </div>
+    <?php elseif (isset($_GET['deactivate']) && $_GET['deactivate'] === 'error'): ?>
+      <div class="status error">
+        There was an error deactivating the member. Please try again.
+      </div>
+    <?php endif; ?>
+
+    <script>
+      // Hide the notification after 3 seconds
+      setTimeout(function() {
+        const status = document.querySelector('.status');
+        if (status) {
+          status.style.display = 'none';
+        }
+      }, 3000);
+    </script>
+
         <script src="../index/index.js"></script>
         <script src="./memberform.js"></script>
         <script src="./members.js"></script>

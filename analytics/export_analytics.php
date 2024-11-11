@@ -3,7 +3,7 @@ require_once('../database/settings.php'); // Include your database settings
 
 // Create a connection
 $conn = new mysqli($host, $user, $pwd, $sql_db);
-
+date_default_timezone_set('Asia/Kuala_Lumpur');
 // Check the connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);

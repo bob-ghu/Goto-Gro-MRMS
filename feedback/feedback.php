@@ -14,25 +14,48 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Notification count
+$limit = 4; // Number of feedbacks per page
+
+// Query to get the total number of feedback entries for pagination calculations
+$sql_count = "SELECT COUNT(*) AS total FROM feedback";
+$count_result = mysqli_query($conn, $sql_count);
+$row_count = $count_result->fetch_assoc();
+$total_feedback = $row_count['total'];
+$total_pages = ceil($total_feedback / $limit); // Calculate total pages
+
+// Determine the current page number
+if (isset($_GET['page']) && is_numeric($_GET['page']) && $_GET['page'] > 0 && $_GET['page'] <= $total_pages) {
+    $page = (int)$_GET['page']; // Validate and sanitize the page number
+} else {
+    $page = 1; // Default to page 1 if not set or invalid
+}
+
+$offset = ($page - 1) * $limit; // Calculate the offset for the SQL query
+
+// Modify SQL query to fetch feedback data with pagination
+$showlimit = "
+    SELECT feedback_id, name, email, feedback_type, comments, created_at 
+    FROM feedback 
+    ORDER BY created_at DESC 
+    LIMIT $limit OFFSET $offset";
+
+$feedbackResult = mysqli_query($conn, $showlimit);
+
+// Check if the query was successful
+if (!$feedbackResult) {
+    die("Error fetching feedback: " . mysqli_error($conn));
+}
+
+// Notification count and recent notifications
 $unread = "SELECT message, notification_type FROM notifications WHERE is_read = 0";
 $notiCount = mysqli_query($conn, $unread);
 $query2 = "SELECT noti, created_at, notification_type FROM notifications WHERE is_read = 0 ORDER BY created_at DESC LIMIT 3";
 $recentNoti = mysqli_query($conn, $query2);
 
-//feedback query:
-$feedbackQuery = "SELECT * FROM feedback ORDER BY created_at DESC"; // Adjust if needed
-$feedbackResult = mysqli_query($conn, $feedbackQuery);
-
-// Check if the feedback query was successful
-if (!$feedbackResult) {
-    die("Error fetching feedback: " . mysqli_error($conn));
-}
-
 // Get the current year
 $year = date('Y');
 
-// Query to get the top 5 most popular items based on the total quantity sold in the current year
+// Query to get the top 3 most popular items based on the total quantity sold in the current year
 $popularItemQuery = "
     SELECT i.Name, SUM(s.Quantity) AS total_sold
     FROM sales s
@@ -40,13 +63,12 @@ $popularItemQuery = "
     WHERE YEAR(Sale_Date) = '$year'
     GROUP BY s.Item_ID
     ORDER BY total_sold DESC
-    LIMIT 3";  // Adjust the limit if you want more or fewer items
+    LIMIT 3";
 
 $popularItemResult = $conn->query($popularItemQuery);
-
-// Close the database connection
-$conn->close();
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -58,9 +80,10 @@ $conn->close();
     <title>Goto Gro MRMS</title>
 
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet" />
-    <link rel="stylesheet" href="../styles/style.css" />
+    
     <link rel="stylesheet" href="../styles/feedback.css" />
     <link rel="stylesheet" href="../styles/feedbackform.css" />
+    <link rel="stylesheet" href="../styles/style.css" />
 </head>
 
 <body>
@@ -136,7 +159,7 @@ $conn->close();
                     <table id="feedback-detail--table">
                         <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>No.</th> <!-- Changed from ID to # for the counter -->
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Feedback Type</th>
@@ -146,10 +169,12 @@ $conn->close();
                         </thead>
                         <tbody>
                             <?php
+                            $counter = 1; // Initialize the counter
+
                             // Fetch each feedback record and display it
                             while ($row = mysqli_fetch_assoc($feedbackResult)) {
                                 echo "<tr>";
-                                echo "<td>" . htmlspecialchars($row['feedback_id']) . "</td>";
+                                echo "<td>" . $counter++ . "</td>"; // Display and increment the counter
                                 echo "<td>" . htmlspecialchars($row['name']) . "</td>";
                                 echo "<td>" . htmlspecialchars($row['email']) . "</td>";
                                 echo "<td>" . htmlspecialchars($row['feedback_type']) . "</td>";
@@ -161,6 +186,27 @@ $conn->close();
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Pagination Controls -->
+                <div id="pagination">
+                    <?php if ($page > 1): ?>
+                        <a href="?page=<?php echo $page - 1; ?>" class="pagination-prev-btn"><span class="material-icons-sharp">arrow_back_ios</span></a>
+                    <?php endif; ?>
+
+                    Page
+                    <?php echo "<form id=\"page-form\" method=\"post\" action=\"./feedback.php\" class=\"page-form\" novalidate=\"novalidate\">
+                                        <input type=\"text\" name=\"page_input\" id=\"page_input\" size=\"1\" value=" . $page . " /> 
+                                    </form>"; ?> of
+                    <?php
+                    // If there are no pages, display "1" as the default total
+                    echo ($total_pages < 1) ? "1" : $total_pages;
+                    ?>
+
+                    <?php if ($page < $total_pages): ?>
+                        <a href="?page=<?php echo $page + 1; ?>" class="pagination-next-btn"><span class="material-icons-sharp">arrow_forward_ios</span></a>
+                    <?php endif; ?>
+                </div>
+
             </div>
         </main>
 
@@ -310,6 +356,26 @@ $conn->close();
             </div>
         </div>
     </div>
+
+    <?php if (isset($_GET['add']) && $_GET['add'] === 'success'): ?>
+      <div class="status success">
+        Feedback added successfully!
+      </div>
+    <?php elseif (isset($_GET['add']) && $_GET['add'] === 'error'): ?>
+      <div class="status error">
+        There was an error adding the feedback. Please try again.
+      </div>
+    <?php endif; ?>
+
+    <script>
+      // Hide the notification after 3 seconds
+      setTimeout(function() {
+        const status = document.querySelector('.status');
+        if (status) {
+          status.style.display = 'none';
+        }
+      }, 3000);
+    </script>
 
     <script src="../index/index.js"></script>
     <script src="./feedback.js"></script>

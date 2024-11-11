@@ -109,12 +109,10 @@ main .recent-logins-list{
   text-align: center;
   box-shadow: var(--box-shadow);
   transition: all 300ms ease;
+  padding-bottom: 2.5rem;
 }
 
 /* Recent Login*/
-.recent-logins-list {
-  margin-top: 2rem;
-}
 
 .recent-logins-list h2 {
   margin-bottom: 0.8rem;
@@ -130,11 +128,12 @@ main .recent-logins-list{
 }
 
 .recent-logins-list table tbody td {
-  height: 2.8rem;
+  height: 3.8rem;
   border-bottom: 1px solid var(--color-light);
   color: var(--color-dark-variant);
 }
 
 .recent-logins-list table tbody tr:last-child td {
   border: none;
+  
 }

@@ -19,7 +19,7 @@ $unread = "SELECT message, notification_type FROM notifications WHERE is_read = 
 $notiCount = mysqli_query($conn, $unread);
 $query2 = "SELECT noti, created_at, notification_type FROM notifications WHERE is_read = 0 ORDER BY created_at DESC LIMIT 3";
 $result2 = mysqli_query($conn, $query2);
-
+date_default_timezone_set('Asia/Kuala_Lumpur');
 // Fetch data based on selected time period (daily, monthly, yearly)
 $timePeriod = isset($_GET['timePeriod']) ? $_GET['timePeriod'] : 'daily';
 $date = date('Y-m-d');
@@ -74,7 +74,7 @@ $profitData = $salesData;
 
 // Populate arrays with query results
 while ($row = $result->fetch_assoc()) {
-  $index = (int)$row[$timePeriod == 'yearly' ? 'month' : ($timePeriod == 'monthly' ? 'day' : 'hour')] - 1;
+  $index = $timePeriod === 'daily' ? (int)$row['hour'] : (int)$row[($timePeriod === 'yearly' ? 'month' : 'day')] - 1;
   $salesData[$index] = (int)$row['sales_count'];
   $revenueData[$index] = (float)$row['revenue'];
   $profitData[$index] = (float)$row['profit'];
@@ -245,7 +245,7 @@ if ($visitResult && $visitResult->num_rows > 0) {
                   FROM loginhistory lh
                   JOIN staff s ON lh.Staff_ID = s.Staff_ID
                   ORDER BY lh.LoginTime DESC 
-                  LIMIT 10"; // Limit to show the last 10 logins
+                  LIMIT 7"; // Limit to show the last 10 logins
 
             $result = $conn->query($query);
             if ($result->num_rows > 0) {
@@ -471,38 +471,6 @@ if ($visitResult && $visitResult->num_rows > 0) {
         const selectedTimePeriod = document.getElementById("timePeriod").value;
         window.location.href = `index.php?timePeriod=${selectedTimePeriod}`;
       }
-    </script>
-
-    <script>
-      // Data for the popular item chart
-      const popularItem = "<?php echo $itemName; ?>";
-      const totalSold = <?php echo $totalSold; ?>;
-
-      // Initialize the pie chart
-      const ctxPie = document.getElementById("popularItemChart").getContext("2d");
-      let popularItemChart = new Chart(ctxPie, {
-        type: "pie",
-        data: {
-          labels: [popularItem],
-          datasets: [{
-            data: [totalSold],
-            backgroundColor: ["rgba(54, 162, 235, 0.7)"],
-            borderColor: ["rgba(54, 162, 235, 1)"],
-            borderWidth: 1
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'top'
-            },
-            tooltip: {
-              enabled: true
-            }
-          }
-        }
-      });
     </script>
 </body>
 

@@ -668,20 +668,22 @@ main .date input[type="date"] {
 
 #pagination .pagination-prev-btn,
 #pagination .pagination-next-btn {
-  padding-top: 5px;
-  margin-top: 0.5rem;
-  margin-left: 1rem;
-  margin-right: 1rem;
+
+  padding: 11px;
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
   text-decoration: none;
-  color: (--color-primary);
+  color: var(--color-primary);
 }
+
 
 /* Input box styling */
 #pagination #page_input {
-  width: 30px;
+  width: 25px;
   padding: 2px;
+  padding-top: 4px;
   margin: 0 10px;
-  font-size: 16px;
+  font-size: 0.9rem;
   text-align: center;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -812,4 +814,52 @@ main .date input[type="date"] {
 
 .bronze {
   color: #CE8946;
+}
+
+/* STATUS NOTIFICATION */
+.status {
+  position: fixed;
+  top: 10%;
+  left: 50%;
+  transform: translate(-50%, -200%);
+  padding: 15px;
+  border-radius: 5px;
+  color: #fff;
+  font-weight: bold;
+  font-size: medium;
+  z-index: 1000;
+  opacity: 0; /* Start with invisible */
+  animation: dropdown 0.5s forwards, go-up 0.5s 2.5s forwards; /* Animate in and out */
+}
+
+/* Keyframe for dropdown effect */
+@keyframes dropdown {
+  0% {
+    transform: translate(-50%, -200%);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, 0%);
+    opacity: 1;
+  }
+}
+
+/* Keyframe for go-up effect */
+@keyframes go-up {
+  0% {
+    transform: translate(-50%, 0%);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -200%);
+    opacity: 0;
+  }
+}
+
+.status.success {
+  background-color: rgba(71, 190, 75, 0.9); /* Green with opacity */
+}
+
+.status.error {
+  background-color: rgba(244, 67, 54, 0.9); /* Red with opacity */
 }

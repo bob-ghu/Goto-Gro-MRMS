@@ -6,7 +6,7 @@ if (!isset($_SESSION['loggedin'])) {
 }
 
 require_once('../database/settings.php'); // Include your database settings
-
+date_default_timezone_set('Asia/Kuala_Lumpur');
 // Create a connection
 $conn = new mysqli($host, $user, $pwd, $sql_db);
 
