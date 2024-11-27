@@ -199,6 +199,12 @@ CREATE TABLE IF NOT EXISTS feedback (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+INSERT INTO feedback (name, email, feedback_type, comments, created_at)
+VALUES
+('Anonymous', 'anon@gmail.com', 'complaint', 'Low quality toilet paper', '2024-10-15 13:45:48'),
+('Old Lady', 'ladyOld@gmail.com', 'compliment', 'Staff are kind and polite', '2024-11-16 12:25:42'),
+('Boy', 'boy@gmail.com', 'suggestion', 'Sell more toys', '2024-12-25 14:44:38');
+
 CREATE TABLE IF NOT EXISTS staff (
     Staff_ID INT(5) NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	Full_Name VARCHAR(50) NOT NULL,
