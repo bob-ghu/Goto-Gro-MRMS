@@ -28,6 +28,7 @@
 #chartLegend {
   text-align: center;
   margin-top: 10px;
+  margin-left: 10px;
 }
 
 /* Optional: Adjust for smaller screens */
@@ -51,7 +52,7 @@
 .custom-legend div {
   display: flex;
   align-items: center;
-  font-size: 13px;
+  font-size: 0.9rem;
 }
 
 /* Style for the color square */

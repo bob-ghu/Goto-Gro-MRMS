@@ -407,7 +407,7 @@ $conn->close(); // Close the database connection
                 <form method="POST" action="export_analytics.php" class="report-type-form">
                     <h4>Select Report Type:</h4>
                     <select name="report_type" id="report_type" required>
-                        <option hidden="hidden">--Select a report--</option>
+                        <option hidden="" value="">--Select a report--</option>
                         <option value="member_sales">Member Sales Data</option>
                         <option value="time_period_sales">Time Period Sales Data</option>
                     </select>
@@ -554,7 +554,7 @@ $conn->close(); // Close the database connection
                                     const legendHtml = chart.data.labels.map((label, index) => {
                                         return `<div style="display: flex; align-items: center;">
                                             <span style="background-color: ${chart.data.datasets[0].backgroundColor[index]}; 
-                                                        width: 12px; height: 12px; display:inline-block; margin-right: 8px;"></span>
+                                                        width: 12px; height: 12px; display:inline-block;"></span>
                                             ${label}: ${quantities[index]}
                                         </div>`;
                                     }).join("");

@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $Item_Price = $itemPriceRow['Selling_Price'];
     } else {
         $_SESSION['error'] = "Item not found in inventory.";
-        header("Location: ./sales.php?edit_id=$Sales_ID");
+        header("Location: ./sales.php?edit_id=error");
         exit();
     }
 

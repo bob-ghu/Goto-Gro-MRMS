@@ -847,7 +847,7 @@ $staffResult = $conn->query($staffQuery);
         Current_Quantity: sessionStorage.getItem('currentQuantity')
       };
 
-      fetch('update_inventory.php', {
+      fetch('../inventory/update_inventory.php', {
           method: 'POST', // Use POST method
           headers: {
             'Content-Type': 'application/json', // Specify the content type

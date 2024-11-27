@@ -450,6 +450,10 @@ main .date input[type="date"] {
   width: 100%;
 }
 
+.right .notification-section .item.info{
+  color: white;
+}
+
 .right .notification-section .item .icon {
   color: var(--color-white);
   border-radius: 50%;

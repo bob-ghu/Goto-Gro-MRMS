@@ -85,3 +85,15 @@ main .notification-detail a {
 .notification-date {
   color: #888; /* Optional: change color for the date */
 }
+
+.alert{
+  color: #ffbb55 !important;
+}
+
+.warning{
+  color: #ff7782 !important;
+}
+
+.info{
+  color: blue;
+}

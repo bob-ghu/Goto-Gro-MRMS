@@ -7,7 +7,7 @@
         die("Database Connection failed: " . $mysqli->connect_error);
     }
 
-    $sqlFile = '../database/gotogro_mrms.sql';  // Adjust to the actual path
+    $sqlFile = '../database/gotogro_mrms.sql';
 
     // Read SQL file content
     $sql = file_get_contents($sqlFile);

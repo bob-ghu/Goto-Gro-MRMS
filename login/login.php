@@ -16,8 +16,7 @@ if ($result->num_rows == 0) {
     require_once '../database/database_check.php';
 }
 
-// Close the connection
-$conn->close();
+
 ?>
 
 <!DOCTYPE html>
@@ -146,7 +145,7 @@ $conn->close();
                         $_SESSION["Username"] = $row["Username"];
                         $_SESSION["Role"] = $row["Role"];
                         $_SESSION["Picture"] = $row["Profile_Picture"];
-                    
+
                         // Insert a record into LoginHistory table to track the visit
                         $insertQuery = "INSERT INTO LoginHistory (Staff_ID) VALUES ('$staffID')";
                         if ($conn->query($insertQuery) === TRUE) {
@@ -155,7 +154,7 @@ $conn->close();
                             // Handle errors (optional)
                             error_log("Error inserting into LoginHistory: " . $conn->error);
                         }
-                    
+
                         header("Location: ../index/index.php");
                         exit;
                     } else { // Login failed
@@ -170,6 +169,18 @@ $conn->close();
                                 <span id=\"minutes\">00</span>:<span id=\"seconds\">00</span>
                             </div>";
                             echo "<script>formTimer($blockedDuration)</script>";
+
+                            // Insert the notification about account lockout
+                            $noti = "Account lockout for user: $username";
+                            $message = "User $username has been locked out after exceeding the maximum login attempts.";
+                            $insertNotificationSql = "INSERT INTO notifications (noti, message, notification_type) VALUES ('$noti', '$message', 'warning')";
+                            if (mysqli_query($conn, $insertNotificationSql)) {
+                                // Optionally log the successful notification insertion
+                                error_log("Notification for lockout created.");
+                            } else {
+                                // Log error if notification insert fails
+                                error_log("Error inserting lockout notification: " . mysqli_error($conn));
+                            }
                             exit;
                         }
                     }
